@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bunnii Media - Premium Full-Stack Ecosystem</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-primary: #05070b;
+            --bg-secondary: #0d111a;
+            --accent-color: #ff3366;
+            --accent-glow: rgba(255, 51, 102, 0.4);
+            --admin-gold: #ffcc00;
+            --admin-glow: rgba(255, 204, 0, 0.3);
+            --text-main: #ffffff;
+            --text-muted: #6c7d93;
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-bg: rgba(13, 17, 26, 0.75);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: '-apple-system', BlinkMacSystemFont, sans-serif; }
+        body { background-color: var(--bg-primary); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+        /* --- BACKGROUND STREAM --- */
+        .emoji-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 1; pointer-events: none; }
+        .floating-3d-emoji { 
+            position: absolute; width: 52px; height: 52px; object-fit: contain; opacity: 0.12; 
+            animation: slideDiagonalApple 15s linear infinite; 
+        }
+        @keyframes slideDiagonalApple { 
+            0% { transform: translate(120vw, -20vh) rotate(0deg); } 
+            100% { transform: translate(-20vw, 120vh) rotate(360deg); } 
+        }
+
+        /* --- AUTH SYSTEM LAYER --- */
+        #authScreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at 50% 30%, #151124 0%, var(--bg-primary) 100%); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+        .auth-container { width: 90%; max-width: 400px; padding: 30px; background: var(--glass-bg); backdrop-filter: blur(35px); border: 1px solid var(--glass-border); border-radius: 32px; text-align: center; box-shadow: 0 40px 80px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
+        .auth-container h2 { font-size: 32px; font-weight: 900; margin-bottom: 20px; }
+        .auth-container h2 span { color: var(--accent-color); text-shadow: 0 0 25px var(--accent-glow); }
+        .auth-container input, .auth-container select { width: 100%; padding: 14px 16px; margin: 8px 0; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); border-radius: 14px; outline: none; font-size: 15px; color: var(--text-main); }
+        .auth-container select option { background: var(--bg-secondary); color: white; }
+        .auth-btn { width: 100%; background: linear-gradient(135deg, var(--accent-color), #ff5e62); color: #ffffff; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 15px; box-shadow: 0 8px 25px var(--accent-glow); transition: 0.2s; }
+        .auth-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .toggle-auth { margin-top: 20px; color: var(--text-muted); cursor: pointer; font-size: 14px; text-decoration: underline; }
+
+        /* --- TOP APP HEADER --- */
+        .top-header { height: 65px; background: rgba(5, 7, 11, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; padding: 0 24px; position: relative; z-index: 90; }
+        .top-logo { font-size: 24px; font-weight: 900; cursor: pointer; }
+        .top-logo span { color: var(--accent-color); }
+        .logout-icon { color: #ff4d4d; font-size: 18px; cursor: pointer; background: rgba(255,77,77,0.1); padding: 10px; border-radius: 50%; width: 38px; height: 38px; display: flex; justify-content: center; align-items: center; }
+
+        /* --- INSTAGRAM SHARE POPUP DRAWER --- */
+        .share-popup-sheet { position: fixed; bottom: -100%; left: 0; width: 100vw; height: 60vh; background: #0b0f19; border-top: 2px solid var(--accent-color); border-top-left-radius: 32px; border-top-right-radius: 32px; z-index: 3000; padding: 25px; transition: 0.4s cubic-bezier(0.1, 0.8, 0.3, 1); box-shadow: 0 -20px 50px rgba(0,0,0,0.8); display: flex; flex-direction: column; }
+        .share-popup-sheet.active { bottom: 0; }
+        .share-sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .following-share-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .share-user-row { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border); }
+        .share-send-btn { background: var(--accent-color); color: white; border: none; padding: 6px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; }
+
+        /* --- MAIN ENGINE WRAPPER --- */
+        .main-content { flex: 1; width: 100%; max-width: 600px; margin: 0 auto; height: calc(100vh - 140px); overflow: hidden; position: relative; z-index: 5; }
+        .app-section { display: none; padding: 15px; height: 100%; overflow-y: auto; }
+        .app-section.active { display: block; }
+
+        /* --- SEARCH ARCHITECTURE --- */
+        .search-container { background: var(--bg-secondary); border: 1px solid var(--glass-border); padding: 12px; border-radius: 16px; margin-bottom: 15px; display: flex; gap: 10px; }
+        .search-container input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 10px 14px; border-radius: 10px; color: white; outline: none; }
+        .search-result-box { display: none; background: #111622; border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px; margin-bottom: 15px; }
+
+        /* --- POST INTERFACES --- */
+        .create-post { background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 20px; padding: 18px; margin-bottom: 20px; }
+        .create-post textarea { width: 100%; border: none; background: transparent; resize: none; outline: none; font-size: 15px; height: 60px; color: var(--text-main); }
+        .gallery-trigger-bar { display: flex; gap: 10px; margin-top: 12px; }
+        .gallery-btn { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px dashed var(--glass-border); color: white; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .media-preview-container { display: none; position: relative; margin-top: 15px; border-radius: 12px; overflow: hidden; max-height: 200px; border: 1px solid var(--accent-color); }
+        .media-preview-container img, .media-preview-container video { width: 100%; height: 100%; object-fit: cover; }
+        .remove-preview-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; z-index: 10; }
+
+        .post-card { background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 20px; padding: 18px; margin-bottom: 18px; }
+        .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .post-user { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
+        .post-timestamp { font-size: 11px; color: var(--text-muted); }
+        .post-avatar { width: 38px; height: 38px; border-radius: 50%; background-size: cover; background-position: center; border: 1.5px solid var(--accent-color); }
+        .post-text { font-size: 15px; line-height: 1.5; color: #e1e7f0; margin-bottom: 12px; }
+        .post-media-slot { margin-bottom: 12px; border-radius: 16px; overflow: hidden; width: 100%; border: 1px solid var(--glass-border); background: #000; }
+        .post-media-slot img, .post-media-slot video { width: 100%; display: block; max-height: 380px; object-fit: cover; }
+        
+        .post-actions { display: flex; gap: 16px; border-top: 1px solid var(--glass-border); padding-top: 12px; }
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; font-weight: 600; }
+        .action-btn:hover { color: white; }
+
+        /* --- CHAT ENVIRONMENT --- */
+        .chat-layout { display: flex; flex-direction: column; height: 100%; }
+        .chat-users-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
+        .user-chat-card { background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 18px; display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; }
+        .chat-window { display: none; flex-direction: column; height: 100%; background: var(--bg-secondary); border-radius: 24px; border: 1px solid var(--glass-border); overflow: hidden; }
+        .chat-window.active { display: flex; }
+        .chat-header { background: rgba(0,0,0,0.4); padding: 15px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg-bubble { max-width: 75%; padding: 12px 16px; border-radius: 18px; font-size: 14px; }
+        .msg-sent { background: var(--accent-color); align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-received { background: rgba(255,255,255,0.08); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .shared-card-bubble { border: 1px solid var(--accent-color); background: rgba(0,0,0,0.3); border-radius: 12px; padding: 10px; margin-top: 5px; font-size: 12px; }
+        .chat-input-area { padding: 12px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--glass-border); display: flex; gap: 10px; }
+        .chat-input-area input { flex: 1; background: var(--bg-primary); border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px; color: white; outline: none; }
+
+        /* --- PROFILE VIEW --- */
+        .profile-header-card { background: var(--bg-secondary); border: 1px solid var(--glass-border); padding: 25px 15px; border-radius: 24px; text-align: center; margin-bottom: 20px; }
+        .profile-pic-container { position: relative; width: 95px; height: 95px; margin: 0 auto 12px; }
+        .profile-pic { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--accent-color); background-size: cover; background-position: center; }
+        .edit-avatar-badge { position: absolute; bottom: 0; right: 0; background: var(--accent-color); width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 2px solid var(--bg-secondary); color: white; font-size: 12px; }
+        .profile-editable-field { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: white; padding: 10px; border-radius: 8px; text-align: center; font-size: 15px; width: 80%; margin: 5px auto 8px; display: block; outline: none; font-weight: bold; }
+        .fixed-email-tag { color: var(--text-muted); font-size: 13px; font-weight: 500; display: block; margin-bottom: 4px; }
+        .country-flag-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 51, 102, 0.15); border: 1px solid var(--accent-color); padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-top: 8px; color: white; }
+        .stats-matrix { display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 15px; }
+        .stat-node { display: flex; flex-direction: column; }
+        .stat-val { font-size: 18px; font-weight: 800; }
+        .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+        .sec-btn { background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); color: white; padding: 8px 16px; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: 600; }
+
+        /* --- MAIN SYSTEM INLINE ADMIN SECTION PANEL --- */
+        .admin-stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .admin-card { background: var(--bg-secondary); border: 1px solid rgba(255, 204, 0, 0.2); border-radius: 20px; padding: 15px; text-align: center; }
+        .admin-card p { font-size: 24px; font-weight: 800; color: var(--admin-gold); }
+        .admin-user-editor-list { display: flex; flex-direction: column; gap: 12px; }
+        .admin-edit-row { background: var(--bg-secondary); border: 1px solid var(--glass-border); padding: 15px; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .admin-edit-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .admin-edit-row input { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: white; padding: 6px 10px; border-radius: 8px; outline: none; font-size: 13px; }
+
+        /* --- BOTTOM NAV CONTROLS --- */
+        .bottom-nav { height: 75px; background: rgba(13, 17, 26, 0.85); backdrop-filter: blur(25px); border-top: 1px solid var(--glass-border); display: flex; justify-content: space-around; align-items: center; position: sticky; bottom: 0; width: 100%; z-index: 99; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; flex: 1; height: 100%; gap: 4px; }
+        .nav-item.active { color: var(--accent-color); }
+        .nav-item.admin-nav-tab { color: #ffbb008f; }
+        .nav-item.admin-nav-tab.active { color: var(--admin-gold) !important; text-shadow: 0 0 10px var(--admin-glow); }
+    </style>
+</head>
+<body>
+
+    <div class="emoji-bg" id="emojiCanvas"></div>
+
+    <div id="authScreen">
+        <div class="auth-container">
+            <h2><span>Bunnii</span> Media</h2>
+            
+            <div id="signupFieldsContainer" style="display: none; border-bottom: 1px solid var(--glass-border); margin-bottom: 12px; padding-bottom: 5px;">
+                <input type="text" id="regFirstName" placeholder="First Name">
+                <input type="text" id="regLastName" placeholder="Last Name">
+                <input type="tel" id="regMobile" placeholder="Mobile Number">
+                <select id="regCountry">
+                    <option value="🇮🇳|India">India 🇮🇳</option>
+                    <option value="🇺🇸|USA">USA 🇺🇸</option>
+                    <option value="🇬🇧|UK">UK 🇬🇧</option>
+                    <option value="🇦🇪|UAE">UAE 🇦🇪</option>
+                    <option value="🇨🇦|Canada">Canada 🇨🇦</option>
+                </select>
+            </div>
+
+            <input type="email" id="authEmail" placeholder="Enter Your Gmail Address">
+            <input type="password" id="authPassword" placeholder="Security Token Pass Code">
+            <button class="auth-btn" id="mainAuthButton" onclick="handleAuth()">Authorize Node Connection</button>
+            <p class="toggle-auth" onclick="toggleAuthMode()" id="toggleText">Create Account / Sign Up New Node</p>
+        </div>
+    </div>
+
+    <div class="top-header">
+        <div class="top-logo" onclick="switchSection('home')">Bunnii<span>.media</span></div>
+        <div class="logout-icon" onclick="logout()"><i class="fa-solid fa-power-off"></i></div>
+    </div>
+    <div id="accounts" class="app-section">
+    <h3 style="margin-bottom: 15px;"><i class="fa-solid fa-users" style="color:var(--accent-color);"></i> Network Nodes</h3>
+    <div id="allAccountsList"></div>
+</div>
+
+    <div class="share-popup-sheet" id="globalShareSheet">
+        <div class="share-sheet-header">
+            <h3 style="font-weight: 800;"><i class="fa-solid fa-paper-plane" style="color:var(--accent-color);"></i> Direct Share Routing</h3>
+            <button class="sec-btn" style="padding: 4px 12px;" onclick="closeShareSheet()">Cancel</button>
+        </div>
+        <div class="following-share-list" id="shareSheetTargetList"></div>
+    </div>
+
+    <div class="main-content">
+        
+        <div id="home" class="app-section active">
+            <div class="search-container">
+                <input type="text" id="globalSearchInput" placeholder="Locate handle via '@username' search query...">
+                <button class="sec-btn" onclick="executeGlobalSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+
+            <div class="search-result-box" id="searchOutputDisplay"></div>
+
+            <div class="create-post">
+                <textarea id="postText" placeholder="Broadcast your tech logs, creative updates, or media payloads to the node..."></textarea>
+                <input type="file" id="galleryPhotoInput" accept="image/*" style="display: none;" onchange="processGalleryFile(this, 'image')">
+                <input type="file" id="galleryVideoInput" accept="video/*" style="display: none;" onchange="processGalleryFile(this, 'video')">
+
+                <div class="gallery-trigger-bar">
+                    <button class="gallery-btn" onclick="document.getElementById('galleryPhotoInput').click()"><i class="fa-solid fa-image" style="color: #4cd96 green;"></i> Attach Image</button>
+                    <button class="gallery-btn" onclick="document.getElementById('galleryVideoInput').click()"><i class="fa-solid fa-video" style="color: #ff3b30;"></i> Attach Video</button>
+                </div>
+
+                <div class="media-preview-container" id="mediaPreviewBox">
+                    <button class="remove-preview-btn" onclick="clearSelectedMedia()"><i class="fa-solid fa-xmark"></i></button>
+                    <div id="previewTargetSlot" style="width:100%; height:100%;"></div>
+                </div>
+
+                <button class="auth-btn" style="width: auto; float: right; padding: 8px 20px; margin-top: 12px;" onclick="createPost()">Deploy Post</button>
+                <div style="clear: both;"></div>
+            </div>
+            
+            <div id="feedArea"></div>
+        </div>
+
+        <div id="chats" class="app-section" style="height: 100%;">
+            <div class="chat-layout" id="chatUsersListView">
+                <h3 style="margin-bottom: 15px;"><i class="fa-solid fa-shield-halved" style="color:var(--accent-color);"></i> End-To-End Node Pipeline</h3>
+                <div class="chat-users-list" id="chatListTarget"></div>
+            </div>
+            
+            <div class="chat-window" id="activeChatFrame">
+                <div class="chat-header">
+                    <span id="chatTargetName" style="font-weight: 700;"></span>
+                    <button class="sec-btn" style="padding:4px 10px; font-size:11px;" onclick="exitChatWindow()">Disconnect</button>
+                </div>
+                <div class="chat-messages" id="chatMsgArea"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatMsgInputField" placeholder="Transmit direct encrypted content...">
+                    <button class="sec-btn" style="background:var(--accent-color); border:none;" onclick="sendSecureMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div id="profile" class="app-section">
+            <div class="profile-header-card">
+                <div class="profile-pic-container">
+                    <div class="profile-pic" id="myProfilePic"></div>
+                    <label for="avatarFileInput" class="edit-avatar-badge"><i class="fa-solid fa-camera"></i></label>
+                    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="updateProfilePictureEngine(this)">
+                </div>
+                
+                <input type="text" class="profile-editable-field" id="profileUserHandleField" placeholder="@handle">
+                <span class="fixed-email-tag" id="profileEmailLabel">user@gmail.com</span>
+                <span class="fixed-email-tag" id="profileMobileLabel" style="color:var(--text-muted); font-size:12px;">Mobile: +91 0000000000</span>
+                <div class="country-flag-badge" id="myCountryBadge">🌐 Global Network</div>
+                
+                <div style="margin-top: 16px;">
+                    <button class="sec-btn" style="background: var(--accent-color); border:none;" onclick="saveProfileIdentityData()"><i class="fa-solid fa-floppy-disk"></i> Save Profile Node</button>
+                </div>
+
+                <div class="stats-matrix">
+                    <div class="stat-node"><div class="stat-val" id="statPostsCount">0</div><div class="stat-label">Posts</div></div>
+                    <div class="stat-node"><div class="stat-val" id="statFollowers">0</div><div class="stat-label">Followers</div></div>
+                    <div class="stat-node"><div class="stat-val" id="statFollowing">0</div><div class="stat-label">Following</div></div>
+                </div>
+            </div>
+            <h4 style="margin-bottom: 12px; color: var(--text-muted); font-weight: 800; font-size:11px; text-transform:uppercase;">Personal Broadcast Matrix</h4>
+            <div id="myPostsArea"></div>
+        </div>
+
+        <div id="adminArea" class="app-section">
+            <h3 style="color: var(--admin-gold); margin-bottom: 15px;"><i class="fa-solid fa-terminal"></i> Creator Control Terminal</h3>
+            <div class="admin-stat-row">
+                <div class="admin-card"><h5>Nodes</h5><p id="inlineAdminUsersCount">0</p></div>
+                <div class="admin-card"><h5>Broadcasts</h5><p id="inlineAdminPostsCount">0</p></div>
+            </div>
+            <h4 style="font-size: 12px; text-transform: uppercase; margin-bottom: 10px; color: var(--text-muted);">Database Read/Write Engine</h4>
+            <div class="admin-user-editor-list" id="inlineAdminUsersList"></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav" id="appBottomNav">
+        <div class="nav-item active" onclick="switchSection('home', this)"><i class="fa-solid fa-house"></i><span>Home</span></div>
+        <div class="nav-item" onclick="switchSection('chats', this)"><i class="fa-solid fa-message"></i><span>Chats</span></div>
+        <div class="nav-item" onclick="switchSection('profile', this)"><i class="fa-solid fa-user"></i><span>Profile</span></div>
+        <div class="nav-item admin-nav-tab" id="dynamicAdminNavTab" style="display: none;" onclick="switchSection('adminArea', this)"><i class="fa-solid fa-screwdriver-wrench"></i><span>Admin Command</span></div>
+    </div>
+
+    <script type="module">
+      window.renderAllAccountsList = function() {
+    const listTarget = document.getElementById('allAccountsList');
+    if(!listTarget) return;
+    listTarget.innerHTML = "";
+    
+    localFallbackDatabase.forEach(u => {
+        const card = document.createElement('div');
+        card.className = "user-chat-card";
+        card.innerHTML = `
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:40px; height:40px; border-radius:50%; background-image:url('${u.avatar}'); background-size:cover; border:1px solid var(--accent-color);"></div>
+                <div>
+                    <div style="font-weight:700;">@${u.username} ${u.countryFlag || ''}</div>
+                    <div style="font-size:11px; color:var(--text-muted);">${u.email}</div>
+                </div>
+            </div>
+        `;
+        listTarget.appendChild(card);
+    });
+};
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { 
+            getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot, addDoc 
+        } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+        import { 
+            getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut 
+        } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+
+        // =======================================================
+        // 🚀 आपके प्रोजेक्ट क्रेडेंशियल्स सफलतापूर्वक फिक्स कर दिए गए हैं!
+        // =======================================================
+        // Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBNJ9WTZc-96w3SsMBgMdKRfX9C-N4_oj4",
+    authDomain: "optical-wall-434100-g5.firebaseapp.com",
+    projectId: "optical-wall-434100-g5",
+    storageBucket: "optical-wall-434100-g5.appspot.com",
+    messagingSenderId: "363477331113",
+    appId: "1:363477331113:web:8dfa36558ca19d3ffee0a8",
+    measurementId: "G-WVQP99RRTC"
+};
+
+// Firebase Initialize
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+        // SYSTEM ECOSYSTEM STATE MANAGERS
+        let localFallbackDatabase = [];
+        let activeUserSession = JSON.parse(localStorage.getItem('bunnii_app_session')) || null;
+        let selectedChatUser = null; 
+        let base64MediaCache = null; 
+        let cachedMediaType = null; 
+        let targetSharePostId = null; 
+        let isSignUpMode = false;
+        let unsubscribeChatListener = null;
+
+        // REALTIME SYNC ENGINE FOR DATA ROUTING
+        function initRealtimeDatabaseSync() {
+            onSnapshot(collection(db, "users"), (snapshot) => {
+                localFallbackDatabase = [];
+                snapshot.forEach(docNode => {
+                    localFallbackDatabase.push(docNode.data());
+                });
+                
+                if(activeUserSession) {
+                    let currentMe = localFallbackDatabase.find(u => u.email === activeUserSession.email);
+                    if(currentMe) {
+                        activeUserSession = currentMe;
+                        localStorage.setItem('bunnii_app_session', JSON.stringify(activeUserSession));
+                    }
+                    synchronizeSystemState();
+                }
+            });
+
+            const postsQuery = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+            onSnapshot(postsQuery, (snapshot) => {
+                const posts = [];
+                snapshot.forEach(docNode => {
+                    posts.push(docNode.data());
+                });
+                renderPostsFeed(posts);
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initRealtimeDatabaseSync();
+            if(activeUserSession) { 
+                synchronizeSystemState(); 
+            } else { 
+                document.getElementById('authScreen').style.display = "flex"; 
+            }
+        });
+
+        // SYSTEM GRAPHICS RUNNER
+        const apple3DEmojis = ["https://img.icons8.com/3d-fluency/94/rocket.png", "https://img.icons8.com/3d-fluency/94/fire.png", "https://img.icons8.com/3d-fluency/94/star.png", "https://img.icons8.com/3d-fluency/94/heart-suit.png"];
+        function generateApple3DStream() {
+            const canvas = document.getElementById('emojiCanvas');
+            if(!canvas) return;
+            for(let i = 0; i < 9; i++) {
+                const img = document.createElement('img'); img.className = 'floating-3d-emoji';
+                img.src = apple3DEmojis[Math.floor(Math.random() * apple3DEmojis.length)];
+                img.style.left = Math.random() * 100 + 'vw'; img.style.top = Math.random() * 80 + 'vh';
+                img.style.animationDuration = (11 + Math.random() * 7) + 's';
+                canvas.appendChild(img);
+            }
+        }
+        generateApple3DStream();
+
+        // =======================================================
+        // 🚀 GLOBAL WINDOW SCOPING BINDINGS FOR BUTTON ONCLICKS
+        // =======================================================
+        
+        window.toggleAuthMode = function() {
+            isSignUpMode = !isSignUpMode;
+            document.getElementById('signupFieldsContainer').style.display = isSignUpMode ? "block" : "none";
+            document.getElementById('mainAuthButton').innerText = isSignUpMode ? "Register & Secure Connection" : "Authorize Node Connection";
+            document.getElementById('toggleText').innerText = isSignUpMode ? "Return to Secure Login Node" : "Create Account / Sign Up New Node";
+        };
+
+        window.processGalleryFile = function(input, type) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    base64MediaCache = e.target.result; cachedMediaType = type;
+                    document.getElementById('mediaPreviewBox').style.display = "block";
+                    document.getElementById('previewTargetSlot').innerHTML = type === 'image' ? `<img src="${base64MediaCache}">` : `<video src="${base64MediaCache}" controls autoplay loop></video>`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        window.clearSelectedMedia = function() {
+            base64MediaCache = null; cachedMediaType = null;
+            document.getElementById('mediaPreviewBox').style.display = "none";
+        };
+
+        window.handleAuth = async function() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            if(!email || !password) return alert("System requires email and token password parameters.");
+
+            try {
+                if(isSignUpMode) {
+                    const fName = document.getElementById('regFirstName').value.trim();
+                    const lName = document.getElementById('regLastName').value.trim();
+                    const mobileNum = document.getElementById('regMobile').value.trim();
+                    const countryRawData = document.getElementById('regCountry').value; 
+                    
+                    if(!fName || !lName || !mobileNum) return alert("All profile fields must be fulfilled!");
+
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    const dataTokens = countryRawData.split('|');
+                    let randomizedHandle = fName.toLowerCase() + Date.now().toString().slice(-4);
+
+                    let newUserNode = { 
+                        uid: user.uid, 
+                        username: randomizedHandle, email: email, pass: password,
+                        firstName: fName, lastName: lName, mobile: mobileNum,
+                        countryFlag: dataTokens[0], countryName: dataTokens[1],
+                        avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=" + randomizedHandle, 
+                        followers: [], following: [] 
+                    };
+
+                    await setDoc(doc(db, "users", user.uid), newUserNode);
+                    activeUserSession = newUserNode;
+                    alert("Node security registration completed successfully!");
+                } else {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+                    
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if(userDoc.exists()) {
+                        activeUserSession = userDoc.data();
+                    } else {
+                        return alert("User configurations missing in Cloud Firestore Database.");
+                    }
+                }
+
+                localStorage.setItem('bunnii_app_session', JSON.stringify(activeUserSession));
+                synchronizeSystemState();
+
+            } catch (error) {
+                alert("Authorization Denied: " + error.message);
+            }
+        };
+
+        window.updateProfilePictureEngine = async function(input) {
+            if (input.files && input.files[0] && activeUserSession) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const imgString = e.target.result;
+                    document.getElementById('myProfilePic').style.backgroundImage = `url('${imgString}')`;
+                    
+                    activeUserSession.avatar = imgString;
+                    localStorage.setItem('bunnii_app_session', JSON.stringify(activeUserSession));
+                    
+                    await updateDoc(doc(db, "users", activeUserSession.uid), { avatar: imgString });
+                    alert("Profile visual configuration committed!");
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        window.saveProfileIdentityData = async function() {
+            let userField = document.getElementById('profileUserHandleField').value.trim();
+            let parsedHandle = userField.replace('@', '');
+            if(!parsedHandle) return alert("System Identity Handle cannot remain blank.");
+
+            let clash = localFallbackDatabase.find(u => u.username === parsedHandle && u.email !== activeUserSession.email);
+            if(clash) return alert("This custom handle node is already reserved.");
+
+            await updateDoc(doc(db, "users", activeUserSession.uid), { username: parsedHandle });
+            activeUserSession.username = parsedHandle;
+            localStorage.setItem('bunnii_app_session', JSON.stringify(activeUserSession));
+            
+            alert("Identity profile handle data synchronized!");
+        };
+
+        window.adminSaveUserNodeModifications = async function(uid) {
+            let targetHandle = document.getElementById(`adm_usr_${uid}`).value.trim();
+            let targetPass = document.getElementById(`adm_pass_${uid}`).value.trim();
+            if(!targetHandle || !targetPass) return alert("Fields cannot be left blank.");
+
+            await updateDoc(doc(db, "users", uid), { username: targetHandle, pass: targetPass });
+            alert("Database write finalized for Node ID: " + uid);
+        };
+
+        window.adminDeleteUserNode = async function(uid) {
+            if(!confirm("Are you absolutely sure you want to completely erase this node from existence?")) return;
+            await deleteDoc(doc(db, "users", uid));
+            alert("User deleted from cloud architecture database.");
+        };
+
+        window.executeGlobalSearch = function() {
+            let queryStr = document.getElementById('globalSearchInput').value.trim().replace('@', '');
+            const targetOutputCard = document.getElementById('searchOutputDisplay');
+            if(!queryStr) { targetOutputCard.style.display = "none"; return; }
+
+            let scannedUserNode = localFallbackDatabase.find(u => u.username.toLowerCase() === queryStr.toLowerCase());
+            if(!scannedUserNode) {
+                targetOutputCard.innerHTML = `<p style="color:var(--text-muted); font-size:13px; text-align:center;">No matching handle discovered.</p>`;
+                targetOutputCard.style.display = "block"; return;
+            }
+
+            targetOutputCard.style.display = "block";
+            renderScannedUserCard(scannedUserNode, targetOutputCard);
+        };
+
+        window.triggerFollowEngine = async function(recipientEmail) {
+            let recipientUser = localFallbackDatabase.find(u => u.email === recipientEmail);
+            if(!recipientUser || !activeUserSession) return;
+
+            let myFollowing = activeUserSession.following || [];
+            let peerFollowers = recipientUser.followers || [];
+
+            if(!myFollowing.includes(recipientEmail)) myFollowing.push(recipientEmail);
+            if(!peerFollowers.includes(activeUserSession.email)) peerFollowers.push(activeUserSession.email);
+
+            await updateDoc(doc(db, "users", activeUserSession.uid), { following: myFollowing });
+            await updateDoc(doc(db, "users", recipientUser.uid), { followers: peerFollowers });
+
+            alert("Handshake achieved!");
+            executeGlobalSearch();
+        };
+
+        window.createPost = async function() {
+            const description = document.getElementById('postText').value;
+            if(!description.trim() && !base64MediaCache) return;
+
+            const timeNow = new Date();
+            const formattedDateString = timeNow.toLocaleDateString() + ' @ ' + timeNow.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const idToken = 'p_' + Date.now();
+
+            const postPayload = {
+                id: idToken, 
+                user: activeUserSession.username, 
+                email: activeUserSession.email, 
+                avatar: activeUserSession.avatar,
+                text: description, 
+                img: (cachedMediaType === 'image' ? base64MediaCache : ""), 
+                vid: (cachedMediaType === 'video' ? base64MediaCache : ""),
+                likes: 0, 
+                timestamp: timeNow.getTime(),
+                timestampString: formattedDateString, 
+                assetUrl: `https://bunnii.media/posts/view?id=${idToken}`,
+                countryFlag: activeUserSession.countryFlag || '🌐'
+            };
+
+            await setDoc(doc(db, "posts", idToken), postPayload);
+            document.getElementById('postText').value = ""; 
+            clearSelectedMedia();
+        };
+
+        window.adminModerateDeletePost = async function(postId) {
+            if(!confirm("Erase this timeline broadcast from network infrastructure?")) return;
+            await deleteDoc(doc(db, "posts", postId));
+        };
+
+        window.copyPostAssetLink = function(url) { navigator.clipboard.writeText(url); alert("Link copied!"); };
+
+        window.likePost = async function(id, currentLikes) {
+            await updateDoc(doc(db, "posts", id), { likes: currentLikes + 1 });
+        };
+
+        window.loadChatTerminalUsers = function() {
+            const listTarget = document.getElementById('chatListTarget'); if(!listTarget) return;
+            listTarget.innerHTML = "";
+            
+            localFallbackDatabase.forEach(u => { 
+                if(activeUserSession && u.email !== activeUserSession.email && activeUserSession.following && activeUserSession.following.includes(u.email)) {
+                    const card = document.createElement('div');
+                    card.className = "user-chat-card";
+                    card.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="width:36px; height:36px; border-radius:50%; background-image:url('${u.avatar}'); background-size:cover; border:1px solid var(--accent-color); background-position:center;"></div>
+                            <div>
+                                <div style="font-weight:700; font-size:14px;">@${u.username} ${u.countryFlag || ''}</div>
+                                <span style='color:#00ffcc; font-size:11px;'><i class='fa-solid fa-circle-nodes'></i> Encryption Matrix Secure</span>
+                            </div>
+                        </div>
+                    `;
+                    card.onclick = () => window.openSecureChatChannel(u.email, u.username);
+                    listTarget.appendChild(card);
+                }
+            });
+        };
+
+        window.openSecureChatChannel = function(targetEmail, targetName) {
+            selectedChatUser = { email: targetEmail, name: targetName };
+            document.getElementById('chatUsersListView').style.display = "none";
+            document.getElementById('activeChatFrame').classList.add('active');
+            document.getElementById('chatTargetName').innerText = 'Connected: @' + targetName; 
+            streamMessages();
+        };
+
+        window.exitChatWindow = function() {
+            document.getElementById('activeChatFrame').classList.remove('active');
+            document.getElementById('chatUsersListView').style.display = "flex";
+            if(unsubscribeChatListener) { unsubscribeChatListener(); unsubscribeChatListener = null; }
+        };
+
+        window.sendSecureMessage = async function() {
+            const inputFieldElement = document.getElementById('chatMsgInputField'); 
+            if(!inputFieldElement || !inputFieldElement.value.trim() || !selectedChatUser) return;
+            
+            let packetMessage = { 
+                sender: activeUserSession.email, 
+                receiver: selectedChatUser.email, 
+                text: inputFieldElement.value, 
+                timestamp: Date.now() 
+            };
+
+            await addDoc(collection(db, "messages"), packetMessage);
+            inputFieldElement.value = "";
+        };
+
+        window.openInstagramShareSheet = function(postId) {
+            targetSharePostId = postId;
+            const openSheetContainer = document.getElementById('globalShareSheet');
+            const innerScrollList = document.getElementById('shareSheetTargetList');
+            if(!innerScrollList || !openSheetContainer) return;
+            innerScrollList.innerHTML = "";
+
+            let arrayList = activeUserSession.following || [];
+
+            if(arrayList.length === 0) {
+                innerScrollList.innerHTML = `<p style="color:var(--text-muted); text-align:center; margin-top:20px; font-size:13px;">Follow active node links to share.</p>`;
+            } else {
+                arrayList.forEach(emailIdentity => {
+                    let friendNode = localFallbackDatabase.find(u => u.email === emailIdentity);
+                    if(friendNode) {
+                        const row = document.createElement('div');
+                        row.className = "share-user-row";
+                        row.innerHTML = `
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="width:32px; height:32px; border-radius:50%; background-image:url('${friendNode.avatar}'); background-size:cover; background-position:center;"></div>
+                                <span style="font-weight:bold; font-size:14px;">@${friendNode.username} ${friendNode.countryFlag || ''}</span>
+                            </div>
+                            <button class="share-send-btn">Route Share</button>
+                        `;
+                        row.querySelector('button').onclick = () => window.executePostTransmissionDirect(friendNode.email, friendNode.username);
+                        innerScrollList.appendChild(row);
+                    }
+                });
+            }
+            openSheetContainer.classList.add('active');
+        };
+
+        window.closeShareSheet = function() { 
+            document.getElementById('globalShareSheet').classList.remove('active'); 
+            targetSharePostId = null; 
+        };
+
+        window.executePostTransmissionDirect = async function(friendEmail, friendUsername) {
+            if(!targetSharePostId) return;
+            
+            const docSnap = await getDoc(doc(db, "posts", targetSharePostId));
+            if(!docSnap.exists()) return;
+            let focusedObject = docSnap.data();
+
+            let sharedMessageText = `🔗 SHARED DATA CARD:\n"@${focusedObject.user}: ${focusedObject.text ? focusedObject.text.substring(0, 32) : 'Attached Media Payload'}..."\nAccess Pointer: ${focusedObject.assetUrl}`;
+
+            let chatMessagePayloadObj = { 
+                sender: activeUserSession.email, 
+                receiver: friendEmail, 
+                text: sharedMessageText, 
+                timestamp: Date.now() 
+            };
+            
+            await addDoc(collection(db, "messages"), chatMessagePayloadObj);
+            alert(`Asset node shared securely to @${friendUsername}`); 
+            window.closeShareSheet();
+        };
+
+        window.switchSection = function(id, element) {
+            document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            window.switchSection = function(id, element) {
+    // ... आपका पुराना कोड ...
+    
+    // यह वाली लाइन जोड़ें:
+    if(id === 'accounts') renderAllAccountsList(); 
+    
+    // ... बाकी कोड ...
+};
+
+            
+            const selectedSection = document.getElementById(id);
+            if(selectedSection) selectedSection.classList.add('active');
+            
+            if(element) {
+                element.classList.add('active');
+            } else {
+                if(id === 'home') document.querySelector('.bottom-nav .nav-item:nth-child(1)').classList.add('active');
+                if(id === 'chats') document.querySelector('.bottom-nav .nav-item:nth-child(2)').classList.add('active');
+                if(id === 'profile') document.querySelector('.bottom-nav .nav-item:nth-child(3)').classList.add('active');
+                <div class="nav-item" onclick="switchSection('accounts', this)"><i class="fa-solid fa-users"></i><span>Accounts</span></div>
+            }
+
+            if(id === 'adminArea') triggerInlineAdminEngineRefresh();
+        };
+
+        window.logout = async function() { 
+            await signOut(auth);
+            localStorage.removeItem('bunnii_app_session'); 
+            location.reload(); 
+        };
+
+        // =======================================================
+        // 🔄 INTERNAL CORE CORE ENGINES
+        // =======================================================
+
+        function synchronizeSystemState() {
+            if(!activeUserSession) return;
+            document.getElementById('authScreen').style.display = "none";
+            
+            document.getElementById('profileEmailLabel').innerText = activeUserSession.email;
+            document.getElementById('profileMobileLabel').innerText = "Mobile Phone: " + (activeUserSession.mobile || "N/A");
+            document.getElementById('profileUserHandleField').value = '@' + activeUserSession.username;
+            document.getElementById('myProfilePic').style.backgroundImage = `url('${activeUserSession.avatar}')`;
+            document.getElementById('myCountryBadge').innerHTML = `${activeUserSession.countryFlag || '🌐'} ${activeUserSession.countryName || 'Global Area'}`;
+
+            document.getElementById('statFollowers').innerText = activeUserSession.followers ? activeUserSession.followers.length : 0;
+            document.getElementById('statFollowing').innerText = activeUserSession.following ? activeUserSession.following.length : 0;
+
+            if(activeUserSession.email.toLowerCase() === "n4062226@gmail.com") {
+                document.getElementById('dynamicAdminNavTab').style.display = "flex";
+                triggerInlineAdminEngineRefresh();
+            } else {
+                document.getElementById('dynamicAdminNavTab').style.display = "none";
+            }
+
+            window.loadChatTerminalUsers();
+            if(selectedChatUser) streamMessages();
+        }
+
+        function triggerInlineAdminEngineRefresh() {
+            if(activeUserSession.email.toLowerCase() !== "n4062226@gmail.com") return;
+            
+            document.getElementById('inlineAdminUsersCount').innerText = localFallbackDatabase.length;
+            const targetListDom = document.getElementById('inlineAdminUsersList');
+            if(!targetListDom) return;
+            targetListDom.innerHTML = "";
+
+            localFallbackDatabase.forEach(usr => {
+                const row = document.createElement('div');
+                row.className = "admin-edit-row";
+                row.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:bold; font-size:14px; color:var(--admin-gold);">Node: @${usr.username}</span>
+                        <span>${usr.countryFlag || '🌐'}</span>
+                    </div>
+                    <div style="font-size:11px; color:var(--text-muted);">Email: ${usr.email}</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <input type="text" id="adm_usr_${usr.uid}" value="${usr.username}" placeholder="Edit Handle">
+                        <input type="text" id="adm_pass_${usr.uid}" value="${usr.pass || '123'}" placeholder="View/Edit Pass">
+                    </div>
+                    <div class="admin-edit-actions">
+                        <button class="sec-btn wipe-btn" style="border-color:crimson; color:crimson; padding:3px 8px; font-size:11px;"><i class="fa-solid fa-trash"></i> Wipe Node</button>
+                        <button class="sec-btn push-btn" style="border-color:var(--admin-gold); color:var(--admin-gold); padding:3px 8px; font-size:11px;"><i class="fa-solid fa-cloud-arrow-up"></i> Push Write</button>
+                    </div>
+                `;
+                row.querySelector('.wipe-btn').onclick = () => window.adminDeleteUserNode(usr.uid);
+                row.querySelector('.push-btn').onclick = () => window.adminSaveUserNodeModifications(usr.uid);
+                targetListDom.appendChild(row);
+            });
+        }
+
+        function renderScannedUserCard(userObject, outputBox) {
+            let followVerified = activeUserSession.following && activeUserSession.following.includes(userObject.email);
+            
+            outputBox.innerHTML = "";
+            const container = document.createElement('div');
+            container.style.cssText = "display:flex; justify-content:space-between; align-items:center; width:100%;";
+            
+            let actionBtnMarkup = "";
+            if(userObject.email !== activeUserSession.email) {
+                if(followVerified) {
+                    actionBtnMarkup = `<button class="sec-btn chat-route-btn" style="background:#00ffcc; color:black; border:none;"><i class="fa-solid fa-message"></i> Secure Chat</button>`;
+                } else {
+                    actionBtnMarkup = `<button class="sec-btn follow-route-btn" style="background:var(--accent-color); border:none;"><i class="fa-solid fa-user-plus"></i> Connect Node</button>`;
+                }
+            } else { 
+                actionBtnMarkup = `<span style="font-size:12px; color:var(--text-muted);">Self Account</span>`; 
+            }
+
+            container.innerHTML = `
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="width:40px; height:40px; border-radius:50%; background-image:url('${userObject.avatar}'); background-size:cover; background-position:center;"></div>
+                    <div>
+                        <div style="font-weight:bold; display:flex; align-items:center; gap:6px;">@${userObject.username} <span>${userObject.countryFlag || ''}</span></div>
+                        <div style="font-size:11px; color:var(--text-muted);">${userObject.firstName} ${userObject.lastName}</div>
+                    </div>
+                </div>
+                <div class="action-slot">${actionBtnMarkup}</div>
+            `;
+
+            const chatBtn = container.querySelector('.chat-route-btn');
+            const followBtn = container.querySelector('.follow-route-btn');
+            if(chatBtn) chatBtn.onclick = () => { window.switchSection('chats'); window.openSecureChatChannel(userObject.email, userObject.username); };
+            if(followBtn) followBtn.onclick = () => window.triggerFollowEngine(userObject.email);
+
+            outputBox.appendChild(container);
+        }
+
+        function renderPostsFeed(posts) {
+            const feedAreaBox = document.getElementById('feedArea'); 
+            const profileFeedBox = document.getElementById('myPostsArea');
+            if(!feedAreaBox || !profileFeedBox) return;
+
+            feedAreaBox.innerHTML = ""; 
+            profileFeedBox.innerHTML = "";
+            let generatedPostIndexCount = 0;
+
+            posts.forEach(p => {
+                renderTimelineBlock(p, feedAreaBox);
+                if(activeUserSession && p.email === activeUserSession.email) { 
+                    generatedPostIndexCount++; 
+                    renderTimelineBlock(p, profileFeedBox); 
+                }
+            });
+
+            if(document.getElementById('statPostsCount')) {
+                document.getElementById('statPostsCount').innerText = generatedPostIndexCount;
+            }
+            if(document.getElementById('inlineAdminPostsCount')) {
+                document.getElementById('inlineAdminPostsCount').innerText = posts.length;
+            }
+        }
+
+        function renderTimelineBlock(data, destinationContainer) {
+            let dynamicMediaEmbedCode = "";
+            if(data.img) dynamicMediaEmbedCode += `<div class="post-media-slot"><img src="${data.img}"></div>`;
+            if(data.vid) dynamicMediaEmbedCode += `<div class="post-media-slot"><video src="${data.vid}" controls loop></video></div>`;
+
+            const card = document.createElement('div');
+            card.className = "post-card";
+            card.id = `post_block_${data.id}`;
+
+            let timelineContextInlineActionBtnMarkup = "";
+            if(activeUserSession && data.email !== activeUserSession.email) {
+                let checkFollowState = activeUserSession.following && activeUserSession.following.includes(data.email);
+                timelineContextInlineActionBtnMarkup = checkFollowState 
+                    ? `<button class="sec-btn inline-msg-btn" style="padding:2px 8px; font-size:11px; border-color:#00ffcc; margin-left:8px;"><i class="fa-solid fa-message"></i> Msg</button>`
+                    : `<button class="sec-btn inline-connect-btn" style="padding:2px 8px; font-size:11px; background:var(--accent-color); border:none; margin-left:8px;"><i class="fa-solid fa-user-plus"></i> Connect</button>`;
+            }
+
+            let creatorDeletePostBtnMarkup = "";
+            if(activeUserSession && activeUserSession.email.toLowerCase() === "n4062226@gmail.com") {
+                creatorDeletePostBtnMarkup = `<button class="sec-btn inline-terminate-btn" style="border-color:crimson; color:crimson; font-size:11px; padding:2px 6px;"><i class="fa-solid fa-trash-can"></i> Terminate Post</button>`;
+            }
+
+            card.innerHTML = `
+                <div class="post-header">
+                    <span class="post-user">
+                        <div class="post-avatar" style="background-image:url('${data.avatar}')"></div>
+                        <div>
+                            <div style="display:flex; align-items:center; gap:4px;">
+                                <strong>@${data.user}</strong> ${data.countryFlag || '🌐'} <span class="inline-action-slot">${timelineContextInlineActionBtnMarkup}</span>
+                            </div>
+                            <div class="post-timestamp">${data.timestampString}</div>
+                        </div>
+                    </span>
+                    <span class="terminate-slot">${creatorDeletePostBtnMarkup}</span>
+                </div>
+                ${dynamicMediaEmbedCode}
+                <div class="post-text">${data.text}</div>
+                <div class="post-actions">
+                    <button class="action-btn like-trigger"><i class="fa-solid fa-heart" style="color:var(--accent-color)"></i> ${data.likes || 0}</button>
+                    <button class="action-btn link-trigger"><i class="fa-solid fa-copy"></i> Track Link</button>
+                    <button class="action-btn share-trigger" style="color:#00ffcc;"><i class="fa-solid fa-share-nodes"></i> Share Node</button>
+                </div>
+            `;
+
+            const inlineMsg = card.querySelector('.inline-msg-btn');
+            const inlineConnect = card.querySelector('.inline-connect-btn');
+            const inlineTerminate = card.querySelector('.inline-terminate-btn');
+
+            if(inlineMsg) inlineMsg.onclick = () => { window.switchSection('chats'); window.openSecureChatChannel(data.email, data.user); };
+            if(inlineConnect) inlineConnect.onclick = () => window.triggerFollowEngine(data.email);
+            if(inlineTerminate) inlineTerminate.onclick = () => window.adminModerateDeletePost(data.id);
+
+            card.querySelector('.like-trigger').onclick = () => window.likePost(data.id, data.likes || 0);
+            card.querySelector('.link-trigger').onclick = () => window.copyPostAssetLink(data.assetUrl);
+            card.querySelector('.share-trigger').onclick = () => window.openInstagramShareSheet(data.id);
+
+            destinationContainer.appendChild(card);
+        }
+
+        function streamMessages() {
+            if(!selectedChatUser || !activeUserSession) return;
+            const messageboxAreaElement = document.getElementById('chatMsgArea'); 
+            if(!messageboxAreaElement) return;
+
+            if(unsubscribeChatListener) unsubscribeChatListener();
+
+            const msgsQuery = query(collection(db, "messages"), orderBy("timestamp", "asc"));
+            
+            unsubscribeChatListener = onSnapshot(msgsQuery, (snapshot) => {
+                messageboxAreaElement.innerHTML = "";
+                snapshot.forEach(docNode => {
+                    let m = docNode.data();
+                    if((m.sender === activeUserSession.email && m.receiver === selectedChatUser.email) || 
+                       (m.sender === selectedChatUser.email && m.receiver === activeUserSession.email)) {
+                        
+                        let validationShareState = m.text.includes("🔗 SHARED DATA CARD:");
+                        let injectionMarkup = validationShareState ? `<div class="shared-card-bubble">${m.text.replace(/\n/g, '<br>')}</div>` : m.text;
+                        let bubbleClass = (m.sender === activeUserSession.email) ? 'msg-sent' : 'msg-received';
+                        
+                        const msgBubble = document.createElement('div');
+                        msgBubble.className = `msg-bubble ${bubbleClass}`;
+                        msgBubble.innerHTML = injectionMarkup;
+                        messageboxAreaElement.appendChild(msgBubble);
+                    }
+                });
+                messageboxAreaElement.scrollTop = messageboxAreaElement.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>
+
