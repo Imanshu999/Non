@@ -25,7 +25,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: '-apple-system', BlinkMacSystemFont, sans-serif; }
         body { background-color: var(--bg-primary); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
 
-        /* --- BACKGROUND STREAM --- */
         .emoji-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 1; pointer-events: none; }
         .floating-3d-emoji { 
             position: absolute; width: 52px; height: 52px; object-fit: contain; opacity: 0.12; 
@@ -36,7 +35,6 @@
             100% { transform: translate(-20vw, 120vh) rotate(360deg); } 
         }
 
-        /* --- AUTH SYSTEM LAYER --- */
         #authScreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at 50% 30%, #151124 0%, var(--bg-primary) 100%); z-index: 1000; display: flex; justify-content: center; align-items: center; }
         .auth-container { width: 90%; max-width: 400px; padding: 30px; background: var(--glass-bg); backdrop-filter: blur(35px); border: 1px solid var(--glass-border); border-radius: 32px; text-align: center; box-shadow: 0 40px 80px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
         .auth-container h2 { font-size: 32px; font-weight: 900; margin-bottom: 20px; }
@@ -47,7 +45,6 @@
         .auth-btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .toggle-auth { margin-top: 20px; color: var(--text-muted); cursor: pointer; font-size: 14px; text-decoration: underline; }
 
-        /* --- TOP APP HEADER --- */
         .top-header { height: 65px; background: rgba(5, 7, 11, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; padding: 0 24px; position: relative; z-index: 90; }
         .top-logo { font-size: 24px; font-weight: 900; cursor: pointer; }
         .top-logo span { color: var(--accent-color); }
@@ -55,7 +52,6 @@
         .header-icon-btn { color: var(--text-main); font-size: 16px; cursor: pointer; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 50%; width: 38px; height: 38px; display: flex; justify-content: center; align-items: center; border: 1px solid var(--glass-border); }
         .logout-icon { color: #ff4d4d; background: rgba(255,77,77,0.1); }
 
-        /* --- INSTAGRAM SHARE POPUP DRAWER --- */
         .share-popup-sheet { position: fixed; bottom: -100%; left: 0; width: 100vw; height: 60vh; background: #0b0f19; border-top: 2px solid var(--accent-color); border-top-left-radius: 32px; border-top-right-radius: 32px; z-index: 3000; padding: 25px; transition: 0.4s cubic-bezier(0.1, 0.8, 0.3, 1); box-shadow: 0 -20px 50px rgba(0,0,0,0.8); display: flex; flex-direction: column; }
         .share-popup-sheet.active { bottom: 0; }
         .share-sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -63,31 +59,38 @@
         .share-user-row { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border); }
         .share-send-btn { background: var(--accent-color); color: white; border: none; padding: 6px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; }
 
-        /* --- MULTI-ACCOUNT DROPDOWN BAR --- */
-        .accounts-pill-box { display: flex; gap: 8px; padding: 10px; background: rgba(0,0,0,0.4); overflow-x: auto; border-bottom: 1px solid var(--glass-border); }
+        /* --- ACCOUNTS PILL BAR WITH ADD ICON --- */
+        .accounts-pill-box { display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(0,0,0,0.4); overflow-x: auto; border-bottom: 1px solid var(--glass-border); }
         .account-pill-node { display: flex; align-items: center; gap: 6px; background: var(--bg-secondary); border: 1px solid var(--glass-border); padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap; }
         .account-pill-node.active { border-color: var(--accent-color); background: rgba(255,51,102,0.1); }
+        .add-account-btn { display: flex; align-items: center; justify-content: center; background: var(--accent-color); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 14px; min-width: 28px; box-shadow: 0 0 10px var(--accent-glow); }
 
-        /* --- GLOBAL FULLSCREEN DYNAMIC MODAL PANELS --- */
+        /* --- GLOBAL LIVE USERS SESSION TAB --- */
+        .global-users-session-tab { background: #111622; padding: 12px; border-bottom: 1px solid var(--glass-border); }
+        .users-session-trigger { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 10px 16px; border-radius: 14px; cursor: pointer; border: 1px solid var(--glass-border); }
+        .users-session-trigger:hover { background: rgba(255,255,255,0.07); }
+        .users-session-dropdown { display: none; margin-top: 10px; max-height: 250px; overflow-y: auto; flex-direction: column; gap: 8px; padding-top: 5px; }
+        .users-session-dropdown.active { display: flex; }
+        .user-session-row { background: var(--bg-secondary); border: 1px solid var(--glass-border); padding: 10px 14px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .user-session-actions { display: flex; gap: 8px; }
+        .user-session-actions button { padding: 6px 10px; font-size: 12px; border-radius: 8px; cursor: pointer; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; }
+        .user-session-actions button.follow-btn-style { background: var(--accent-color); border: none; font-weight: bold; }
+
         .system-modal-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,7,11,0.9); z-index: 4000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(20px); }
         .modal-body-container { width: 90%; max-width: 500px; background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 28px; padding: 25px; max-height: 85vh; overflow-y: auto; position: relative; }
         .close-modal-x { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; color: var(--text-muted); }
 
-        /* --- MAIN ENGINE WRAPPER --- */
         .main-content { flex: 1; width: 100%; max-width: 600px; margin: 0 auto; height: calc(100vh - 140px); overflow: hidden; position: relative; z-index: 5; }
         .app-section { display: none; padding: 15px; height: 100%; overflow-y: auto; }
         .app-section.active { display: block; }
 
-        /* --- SEARCH ARCHITECTURE --- */
         .search-container { background: var(--bg-secondary); border: 1px solid var(--glass-border); padding: 12px; border-radius: 16px; margin-bottom: 15px; display: flex; gap: 10px; }
         .search-container input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 10px 14px; border-radius: 10px; color: white; outline: none; }
         .search-result-box { display: none; background: #111622; border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px; margin-bottom: 15px; }
 
-        /* --- TWITTER TRENDS BAR --- */
         .trends-bar { display: flex; gap: 10px; overflow-x: auto; padding: 8px 0; margin-bottom: 12px; font-size: 12px; border-bottom: 1px solid var(--glass-border); }
         .trend-badge { background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 12px; border: 1px solid var(--glass-border); white-space: nowrap; cursor: pointer; color: #00ffcc; }
 
-        /* --- POST INTERFACES --- */
         .create-post { background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 20px; padding: 18px; margin-bottom: 20px; }
         .create-post textarea { width: 100%; border: none; background: transparent; resize: none; outline: none; font-size: 15px; height: 60px; color: var(--text-main); }
         .gallery-trigger-bar { display: flex; gap: 10px; margin-top: 12px; }
@@ -105,12 +108,10 @@
         .post-media-slot { margin-bottom: 12px; border-radius: 16px; overflow: hidden; width: 100%; border: 1px solid var(--glass-border); background: #000; position: relative; user-select: none; }
         .post-media-slot img, .post-media-slot video { width: 100%; display: block; max-height: 380px; object-fit: cover; }
         
-        /* --- INSTAGRAM DOUBLE TAP HEART ANIMATION --- */
         .heart-pop { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 60px; text-shadow: 0 0 20px var(--accent-glow); pointer-events: none; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 20; }
         .heart-pop.animate { transform: translate(-50%, -50%) scale(1); animation: heartFade 0.8s forwards; }
         @keyframes heartFade { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
 
-        /* --- TIKTOK REELS FULLSCREEN VIEW --- */
         .reels-active-mode { max-width: 100% !important; height: calc(100vh - 140px) !important; }
         .reels-active-mode #feedArea { display: snap; snap-type: y mandatory; overflow-y: scroll; height: 100%; }
         .reels-active-mode .post-card { snap-align: start; height: 100%; margin-bottom: 0; border-radius: 0; border: none; display: flex; flex-direction: column; justify-content: center; }
@@ -123,7 +124,6 @@
         .crud-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; }
         .crud-btn:hover { color: var(--accent-color); }
 
-        /* --- CHAT ENVIRONMENT --- */
         .chat-layout { display: flex; flex-direction: column; height: 100%; }
         .chat-users-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
         .user-chat-card { background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 18px; display: flex; justify-content: space-between; align-items: center; padding: 15px; cursor: pointer; }
@@ -134,7 +134,7 @@
         .msg-container { display: flex; flex-direction: column; width: 100%; max-width: 75%; position: relative; }
         .msg-container.sent { align-self: flex-end; align-items: flex-end; }
         .msg-container.received { align-self: flex-start; align-items: flex-start; }
-        .msg-bubble { padding: 12px 16px; border-radius: 18px; font-size: 14px; width: 100%; }
+        .msg-bubble { padding: 12px 16px; border-radius: 18px; font-size: 14px; width: 100%; word-break: break-all; }
         .msg-sent { background: var(--accent-color); border-bottom-right-radius: 4px; }
         .msg-received { background: rgba(255,255,255,0.08); border-bottom-left-radius: 4px; }
         .shared-card-bubble { border: 1px solid var(--accent-color); background: rgba(0,0,0,0.3); border-radius: 12px; padding: 10px; margin-top: 5px; font-size: 12px; }
@@ -142,7 +142,6 @@
         .chat-input-area input { flex: 1; background: var(--bg-primary); border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px; color: white; outline: none; }
         .chat-timer-select { background: var(--bg-primary); color: white; border: 1px solid var(--glass-border); padding: 10px; border-radius: 10px; font-size: 12px; outline: none; }
 
-        /* --- PROFILE VIEW --- */
         .profile-header-card { background: var(--bg-secondary); border: 1px solid var(--glass-border); padding: 25px 15px; border-radius: 24px; text-align: center; margin-bottom: 20px; }
         .profile-pic-container { position: relative; width: 95px; height: 95px; margin: 0 auto 12px; }
         .profile-pic { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--accent-color); background-size: cover; background-position: center; }
@@ -156,7 +155,6 @@
         .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 600; }
         .sec-btn { background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); color: white; padding: 8px 16px; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: 600; }
 
-        /* --- MAIN SYSTEM INLINE ADMIN SECTION PANEL --- */
         .admin-stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .admin-card { background: var(--bg-secondary); border: 1px solid rgba(255, 204, 0, 0.2); border-radius: 20px; padding: 15px; text-align: center; }
         .admin-card p { font-size: 24px; font-weight: 800; color: var(--admin-gold); }
@@ -165,7 +163,6 @@
         .admin-edit-actions { display: flex; gap: 10px; justify-content: flex-end; }
         .admin-edit-row input { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: white; padding: 6px 10px; border-radius: 8px; outline: none; font-size: 13px; }
 
-        /* --- BOTTOM NAV CONTROLS --- */
         .bottom-nav { height: 75px; background: rgba(13, 17, 26, 0.85); backdrop-filter: blur(25px); border-top: 1px solid var(--glass-border); display: flex; justify-content: space-around; align-items: center; position: sticky; bottom: 0; width: 100%; z-index: 99; }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; flex: 1; height: 100%; gap: 4px; }
         .nav-item.active { color: var(--accent-color); }
@@ -215,7 +212,20 @@
         </div>
     </div>
 
-    <div class="accounts-pill-box" id="multiAccountsGlobalBar"></div>
+    <!-- GLOBAL USERS SYSTEM DROPDOWN BAR -->
+    <div class="global-users-session-tab">
+        <div class="users-session-trigger" onclick="toggleUsersSessionDropdown()">
+            <span><i class="fa-solid fa-users" style="color: var(--accent-color);"></i> <b>Users Matrix Hub</b></span>
+            <i class="fa-solid fa-chevron-down" id="usersDropdownChevron"></i>
+        </div>
+        <div class="users-session-dropdown" id="usersGlobalDropdownArea"></div>
+    </div>
+
+    <!-- MULTI-ACCOUNT BAR WITH PLUS ICON -->
+    <div class="accounts-pill-box">
+        <button class="add-account-btn" onclick="openNewAccountAuthForm()" title="Add New Node Account"><i class="fa-solid fa-plus"></i></button>
+        <div id="multiAccountsGlobalBar" style="display: flex; gap: 8px; overflow-x: auto;"></div>
+    </div>
 
     <div class="system-modal-layer" id="qrModalWrapper">
         <div class="modal-body-container">
@@ -297,13 +307,24 @@
                     <button class="sec-btn" style="padding:4px 10px; font-size:11px;" onclick="exitChatWindow()">Disconnect</button>
                 </div>
                 <div class="chat-messages" id="chatMsgArea"></div>
+                
+                <!-- CHAT MEDIA PREVIEW CONTAINER -->
+                <div id="chatMediaPreviewBar" style="display:none; padding:10px; background:rgba(0,0,0,0.5); border-top:1px solid var(--glass-border); position:relative;">
+                    <span onclick="clearChatSelectedMedia()" style="position:absolute; right:10px; top:5px; color:red; cursor:pointer;"><i class="fa-solid fa-circle-xmark"></i></span>
+                    <div id="chatMediaPreviewPayloadSlot" style="max-height:80px; overflow:hidden;"></div>
+                </div>
+
                 <div class="chat-input-area">
-                    <select class="chat-timer-select" id="messageDestructTimer" title="Telegram Self-Destruct Message Timer">
+                    <select class="chat-timer-select" id="messageDestructTimer" title="Self-Destruct Message Timer">
                         <option value="0">Normal Chat</option>
                         <option value="5">5 Secs</option>
                         <option value="10">10 Secs</option>
                         <option value="30">30 Secs</option>
                     </select>
+                    
+                    <input type="file" id="chatMediaFileInput" accept="image/*,video/*" style="display:none;" onchange="processChatMediaAttachment(this)">
+                    <button class="sec-btn" onclick="document.getElementById('chatMediaFileInput').click()" style="padding:10px; border-radius:12px;" title="Attach Image/Video"><i class="fa-solid fa-paperclip"></i></button>
+
                     <input type="text" id="chatMsgInputField" placeholder="Transmit direct encrypted content...">
                     <button class="sec-btn" style="background:var(--accent-color); border:none;" onclick="sendSecureMessage()"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
@@ -364,9 +385,6 @@
             getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut 
         } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
-        // =======================================================
-        // 🚀 CLEAN & RELIABLE FIREBASE CONFIGURATION LAYER
-        // =======================================================
         const firebaseConfig = {
             apiKey: "AIzaSyBNJ9WTZc-96w3SsMBgMdKRfX9C-N4_oj4", 
             authDomain: "optical-wall-434100-g5.firebaseapp.com",
@@ -383,20 +401,20 @@
 
         const ADMIN_EMAIL = "bunnii.media.admin@gmail.com"; 
 
-        // STATE OBJECTS
         let localFallbackDatabase = [];
         let globalPostsCache = [];
         let activeUserSession = JSON.parse(localStorage.getItem('bunnii_app_session')) || null;
         let selectedChatUser = null; 
         let base64MediaCache = null; 
         let cachedMediaType = null; 
+        let chatBase64MediaCache = null;
+        let chatCachedMediaType = null;
         let targetSharePostId = null; 
         let isSignUpMode = false;
         let unsubscribeChatListener = null;
         let qrScannerInstance = null;
         let isReelsModeActive = false; 
 
-        // REALTIME SYNC ENGINE FOR DATA ROUTING
         function initRealtimeDatabaseSync() {
             onSnapshot(collection(db, "users"), (snapshot) => {
                 localFallbackDatabase = [];
@@ -414,6 +432,7 @@
                     synchronizeSystemState();
                 }
                 renderMultiAccountsBar();
+                renderUsersGlobalDropdown();
             });
 
             const postsQuery = query(collection(db, "posts"), orderBy("timestamp", "desc"));
@@ -437,7 +456,6 @@
             }
         });
 
-        // SYSTEM GRAPHICS RUNNER
         const apple3DEmojis = ["https://img.icons8.com/3d-fluency/94/rocket.png", "https://img.icons8.com/3d-fluency/94/fire.png", "https://img.icons8.com/3d-fluency/94/star.png", "https://img.icons8.com/3d-fluency/94/heart-suit.png"];
         function generateApple3DStream() {
             const canvas = document.getElementById('emojiCanvas');
@@ -452,7 +470,6 @@
         }
         generateApple3DStream();
 
-        // MULTI-ACCOUNT VAULT ENGINE
         function getSavedAccountsFromVault() {
             return JSON.parse(localStorage.getItem('bunnii_vault_accounts')) || [];
         }
@@ -473,8 +490,6 @@
             const bar = document.getElementById('multiAccountsGlobalBar');
             if(!bar) return;
             let accounts = getSavedAccountsFromVault();
-            if(accounts.length <= 1) { bar.style.display = "none"; return; }
-            bar.style.display = "flex";
             bar.innerHTML = "";
             accounts.forEach(acc => {
                 let isActive = activeUserSession && acc.email === activeUserSession.email;
@@ -489,6 +504,12 @@
             });
         }
 
+        window.openNewAccountAuthForm = function() {
+            document.getElementById('authScreen').style.display = "flex";
+            document.getElementById('authEmail').value = "";
+            document.getElementById('authPassword').value = "";
+        };
+
         async function switchActiveAccountSession(email) {
             let accounts = getSavedAccountsFromVault();
             let target = accounts.find(a => a.email === email);
@@ -500,9 +521,54 @@
             location.reload();
         }
 
-        // =======================================================
-        // 🚀 GLOBAL CODES & QR ENGINE BINDINGS
-        // =======================================================
+        // --- GLOBAL USERS MODULE DRAWERS ---
+        window.toggleUsersSessionDropdown = function() {
+            const area = document.getElementById('usersGlobalDropdownArea');
+            const chev = document.getElementById('usersDropdownChevron');
+            area.classList.toggle('active');
+            if(area.classList.contains('active')) {
+                chev.className = "fa-solid fa-chevron-up";
+            } else {
+                chev.className = "fa-solid fa-chevron-down";
+            }
+        };
+
+        function renderUsersGlobalDropdown() {
+            const area = document.getElementById('usersGlobalDropdownArea');
+            if(!area) return;
+            area.innerHTML = "";
+            
+            localFallbackDatabase.forEach(usr => {
+                if(activeUserSession && usr.email === activeUserSession.email) return;
+                
+                let isFollowing = activeUserSession && activeUserSession.following && activeUserSession.following.includes(usr.email);
+                const row = document.createElement('div');
+                row.className = "user-session-row";
+                row.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="window.launchUserProfileInspectorModal('${usr.username}')">
+                        <img src="${usr.avatar}" style="width:32px; height:32px; border-radius:50%; border:1px solid var(--accent-color);">
+                        <div>
+                            <div style="font-size:14px; font-weight:bold;">@${usr.username} ${usr.countryFlag || ''}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">${usr.firstName} ${usr.lastName}</div>
+                        </div>
+                    </div>
+                    <div class="user-session-actions">
+                        <button class="${!isFollowing ? 'follow-btn-style' : ''}" onclick="window.triggerFollowEngine('${usr.email}')">
+                            ${isFollowing ? 'Connected' : '<i class="fa-solid fa-user-plus"></i> Connect'}
+                        </button>
+                        <button onclick="switchSection('chats'); window.openSecureChatChannel('${usr.email}', '${usr.username}');" title="Message"><i class="fa-solid fa-message"></i></button>
+                        <button onclick="initiateSystemCall('Audio', '${usr.username}')" title="Audio Call" style="color:#00ffcc;"><i class="fa-solid fa-phone"></i></button>
+                        <button onclick="initiateSystemCall('Video', '${usr.username}')" title="Video Call" style="color:var(--accent-color);"><i class="fa-solid fa-video"></i></button>
+                    </div>
+                `;
+                area.appendChild(row);
+            });
+        }
+
+        window.initiateSystemCall = function(type, user) {
+            alert(`Initializing direct full-duplex secure ${type} over WebRTC connection matrix to @${user}... Connection handshake pending.`);
+        };
+
         window.openMyQRNodePopup = function() {
             if(!activeUserSession) return;
             document.getElementById('myQrTargetContainer').innerHTML = "";
@@ -555,9 +621,9 @@
             const headerSlot = document.getElementById('inspectorProfileHeaderSlot');
             const timelineSlot = document.getElementById('inspectorProfileTimelineFeed');
             
-            let isFollowing = activeUserSession.following && activeUserSession.following.includes(userObj.email);
+            let isFollowing = activeUserSession && activeUserSession.following && activeUserSession.following.includes(userObj.email);
             let actionBtnMarkup = "";
-            if(userObj.email !== activeUserSession.email) {
+            if(activeUserSession && userObj.email !== activeUserSession.email) {
                 actionBtnMarkup = isFollowing 
                     ? `<button class="sec-btn" style="background:#00ffcc; color:black; border:none;" onclick="closeSystemModal('userProfileInspectorModal'); switchSection('chats'); window.openSecureChatChannel('${userObj.email}', '${userObj.username}');"><i class="fa-solid fa-message"></i> Message</button>`
                     : `<button class="sec-btn" style="background:var(--accent-color); border:none;" onclick="triggerFollowEngine('${userObj.email}')"><i class="fa-solid fa-user-plus"></i> Connect</button>`;
@@ -582,7 +648,6 @@
             document.getElementById('userProfileInspectorModal').style.display = "flex";
         };
 
-        // EVALUATE DEEP LINK ROUTING (100% WORKING INTERNAL ROUTER)
         function processDeepLinkHashingEvaluation() {
             let hash = window.location.hash;
             if(!hash) return;
@@ -619,7 +684,7 @@
                 reader.onload = function(e) {
                     base64MediaCache = e.target.result; cachedMediaType = type;
                     document.getElementById('mediaPreviewBox').style.display = "block";
-                    document.getElementById('previewTargetSlot').innerHTML = type === 'image' ? `<img src="${base64MediaCache}">` : `<video src="${base64MediaCache}" controls autoplay loop></video>`;
+                    document.getElementById('previewTargetSlot').innerHTML = type === 'image' ? `<img src="${base64MediaCache}">` : `<video src="${base64MediaCache}" autoplay muted loop controls style="max-height:180px;"></video>`;
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -754,13 +819,21 @@
             let myFollowing = activeUserSession.following || [];
             let peerFollowers = recipientUser.followers || [];
 
-            if(!myFollowing.includes(recipientEmail)) myFollowing.push(recipientEmail);
-            if(!peerFollowers.includes(activeUserSession.email)) peerFollowers.push(activeUserSession.email);
+            if(!myFollowing.includes(recipientEmail)) {
+                myFollowing.push(recipientEmail);
+            } else {
+                myFollowing = myFollowing.filter(e => e !== recipientEmail);
+            }
+
+            if(!peerFollowers.includes(activeUserSession.email)) {
+                peerFollowers.push(activeUserSession.email);
+            } else {
+                peerFollowers = peerFollowers.filter(e => e !== activeUserSession.email);
+            }
 
             await updateDoc(doc(db, "users", activeUserSession.uid), { following: myFollowing });
             await updateDoc(doc(db, "users", recipientUser.uid), { followers: peerFollowers });
 
-            alert("Handshake achieved!");
             if(document.getElementById('userProfileInspectorModal').style.display === "flex") {
                 window.launchUserProfileInspectorModal(recipientUser.username);
             } else {
@@ -769,6 +842,7 @@
         };
 
         window.createPost = async function() {
+            if(!activeUserSession) return alert("Unauthorized operation node.");
             const description = document.getElementById('postText').value;
             if(!description.trim() && !base64MediaCache) return;
 
@@ -813,7 +887,6 @@
             await updateDoc(doc(db, "posts", id), { likes: currentLikes + 1 });
         };
 
-        // INSTAGRAM DOUBLE TAP INSTANT ENGAGEMENT LOGIC
         window.handleInstagramDoubleTap = function(postId, currentLikes, element) {
             const heartNode = element.querySelector('.heart-pop');
             if(heartNode) {
@@ -823,7 +896,6 @@
             window.likePost(postId, currentLikes);
         };
 
-        // TIKTOK REELS MODE CORE SYSTEM CONFIG
         window.toggleReelsMode = function() {
             isReelsModeActive = !isReelsModeActive;
             const containerFrame = document.getElementById('mainAppContentFrame');
@@ -842,7 +914,6 @@
             renderPostsFeed(globalPostsCache);
         };
 
-        // TWITTER HASHTAG EXTRACTOR SYSTEM
         function extractAndRenderTwitterTrends(posts) {
             const trendBox = document.getElementById('globalTrendsContainer');
             if(!trendBox) return;
@@ -895,6 +966,10 @@
         };
 
         window.openSecureChatChannel = function(targetEmail, targetName) {
+            // BUG FIX: चैट लोड करने से पहले पिछले फ्रेंड का बफर तुरंत क्लियर करें
+            const messageboxAreaElement = document.getElementById('chatMsgArea');
+            if(messageboxAreaElement) messageboxAreaElement.innerHTML = "";
+            
             selectedChatUser = { email: targetEmail, name: targetName };
             document.getElementById('chatUsersListView').style.display = "none";
             document.getElementById('activeChatFrame').classList.add('active');
@@ -906,25 +981,54 @@
             document.getElementById('activeChatFrame').classList.remove('active');
             document.getElementById('chatUsersListView').style.display = "flex";
             if(unsubscribeChatListener) { unsubscribeChatListener(); unsubscribeChatListener = null; }
+            selectedChatUser = null; 
+            const messageboxAreaElement = document.getElementById('chatMsgArea');
+            if(messageboxAreaElement) messageboxAreaElement.innerHTML = ""; // Complete cleanup
+        };
+
+        // CHAT INLINE MEDIA HANDLERS
+        window.processChatMediaAttachment = function(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                const type = input.files[0].type.startsWith('video') ? 'video' : 'image';
+                reader.onload = function(e) {
+                    chatBase64MediaCache = e.target.result;
+                    chatCachedMediaType = type;
+                    document.getElementById('chatMediaPreviewBar').style.display = "block";
+                    document.getElementById('chatMediaPreviewPayloadSlot').innerHTML = type === 'image' 
+                        ? `<img src="${chatBase64MediaCache}" style="height:60px; border-radius:8px;">` 
+                        : `<video src="${chatBase64MediaCache}" style="height:60px; border-radius:8px;" muted></video>`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        window.clearChatSelectedMedia = function() {
+            chatBase64MediaCache = null; chatCachedMediaType = null;
+            document.getElementById('chatMediaPreviewBar').style.display = "none";
+            document.getElementById('chatMediaFileInput').value = "";
         };
 
         window.sendSecureMessage = async function() {
             const inputFieldElement = document.getElementById('chatMsgInputField'); 
             const timerSelector = document.getElementById('messageDestructTimer');
-            if(!inputFieldElement || !inputFieldElement.value.trim() || !selectedChatUser) return;
+            if((!inputFieldElement.value.trim() && !chatBase64MediaCache) || !selectedChatUser) return;
             
             let destructSecs = parseInt(timerSelector.value) || 0;
 
             let packetMessage = { 
                 sender: activeUserSession.email, 
                 receiver: selectedChatUser.email, 
-                text: inputFieldElement.value, 
+                text: inputFieldElement.value,
+                chatImg: (chatCachedMediaType === 'image' ? chatBase64MediaCache : ""),
+                chatVid: (chatCachedMediaType === 'video' ? chatBase64MediaCache : ""),
                 timestamp: Date.now(),
                 destructTimer: destructSecs 
             };
 
             await addDoc(collection(db, "messages"), packetMessage);
             inputFieldElement.value = "";
+            clearChatSelectedMedia();
         };
 
         window.modifySecureMessagePayload = async function(msgId) {
@@ -934,11 +1038,7 @@
         };
 
         window.removeSecureMessageFromCloud = async function(msgId) {
-            try {
-                await deleteDoc(doc(db, "messages", msgId));
-            } catch (err) {
-                console.error("Self destruct delete sequence failed:", err);
-            }
+            try { await deleteDoc(doc(db, "messages", msgId)); } catch (err) {}
         };
 
         window.terminateSecureMessagePayload = async function(msgId) {
@@ -1037,10 +1137,6 @@
             }
         };
 
-        // =======================================================
-        // 🔄 INTERNAL CORE ENGINES
-        // =======================================================
-
         function synchronizeSystemState() {
             if(!activeUserSession) return;
             document.getElementById('authScreen').style.display = "none";
@@ -1062,6 +1158,7 @@
             }
 
             window.loadChatTerminalUsers();
+            renderUsersGlobalDropdown();
             if(selectedChatUser) streamMessages();
         }
 
@@ -1098,14 +1195,14 @@
         }
 
         function renderScannedUserCard(userObject, outputBox) {
-            let followVerified = activeUserSession.following && activeUserSession.following.includes(userObject.email);
+            let followVerified = activeUserSession && activeUserSession.following && activeUserSession.following.includes(userObject.email);
             
             outputBox.innerHTML = "";
             const container = document.createElement('div');
             container.style.cssText = "display:flex; justify-content:space-between; align-items:center; width:100%;";
             
             let actionBtnMarkup = "";
-            if(userObject.email !== activeUserSession.email) {
+            if(activeUserSession && userObject.email !== activeUserSession.email) {
                 if(followVerified) {
                     actionBtnMarkup = `<button class="sec-btn chat-route-btn" style="background:#00ffcc; color:black; border:none;"><i class="fa-solid fa-message"></i> Secure Chat</button>`;
                 } else {
@@ -1164,7 +1261,8 @@
         function renderTimelineBlock(data, destinationContainer, skipInspectorLaunch = false) {
             let dynamicMediaEmbedCode = "";
             if(data.img) dynamicMediaEmbedCode += `<div class="post-media-slot" ondblclick="window.handleInstagramDoubleTap('${data.id}', ${data.likes || 0}, this)"><div class="heart-pop"><i class="fa-solid fa-heart"></i></div><img src="${data.img}"></div>`;
-            if(data.vid) dynamicMediaEmbedCode += `<div class="post-media-slot" ondblclick="window.handleInstagramDoubleTap('${data.id}', ${data.likes || 0}, this)"><div class="heart-pop"><i class="fa-solid fa-heart"></i></div><video src="${data.vid}" controls loop></video></div>`;
+            // BUG FIX: Added native video properties for explicit sound support
+            if(data.vid) dynamicMediaEmbedCode += `<div class="post-media-slot" ondblclick="window.handleInstagramDoubleTap('${data.id}', ${data.likes || 0}, this)"><div class="heart-pop"><i class="fa-solid fa-heart"></i></div><video src="${data.vid}" controls playsinline loop style="width:100%; max-height:380px;"></video></div>`;
 
             const card = document.createElement('div');
             card.className = "post-card";
@@ -1237,18 +1335,26 @@
             const msgsQuery = query(collection(db, "messages"), orderBy("timestamp", "asc"));
             
             unsubscribeChatListener = onSnapshot(msgsQuery, (snapshot) => {
+                // Ensure double security against overlapping packets
+                if(!selectedChatUser) return;
                 messageboxAreaElement.innerHTML = "";
+                
                 snapshot.forEach(docNode => {
                     let m = docNode.data();
                     let mId = docNode.id;
                     if((m.sender === activeUserSession.email && m.receiver === selectedChatUser.email) || 
                        (m.sender === selectedChatUser.email && m.receiver === activeUserSession.email)) {
                         
-                        let validationShareState = m.text.includes("🔗 SHARED DATA CARD:");
-                        let injectionMarkup = validationShareState ? `<div class="shared-card-bubble">${m.text.replace(/\n/g, '<br>')}</div>` : m.text;
+                        let mediaPayloadCode = "";
+                        if(m.chatImg) mediaPayloadCode += `<img src="${m.chatImg}" style="max-width:100%; border-radius:10px; display:block; margin-bottom:5px;">`;
+                        if(m.chatVid) mediaPayloadCode += `<video src="${m.chatVid}" controls playsinline style="max-width:100%; border-radius:10px; display:block; margin-bottom:5px;"></video>`;
+
+                        let validationShareState = m.text && m.text.includes("🔗 SHARED DATA CARD:");
+                        let textNodeInjection = validationShareState ? `<div class="shared-card-bubble">${m.text.replace(/\n/g, '<br>')}</div>` : (m.text || "");
+                        
+                        let injectionMarkup = `<div>${mediaPayloadCode}${textNodeInjection}</div>`;
                         let bubbleClass = (m.sender === activeUserSession.email) ? 'msg-sent' : 'msg-received';
                         
-                        // TELEGRAM SELF-DESTRUCT ENGINE
                         if(m.destructTimer && m.destructTimer > 0) {
                             let msElapsed = Date.now() - m.timestamp;
                             let secElapsed = Math.floor(msElapsed / 1000);
