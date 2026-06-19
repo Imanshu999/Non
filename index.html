@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bunnii Media - Premium Full-Stack Ecosystem</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
     
     <style>
         :root {
@@ -49,7 +51,9 @@
         .top-header { height: 65px; background: rgba(5, 7, 11, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; padding: 0 24px; position: relative; z-index: 90; }
         .top-logo { font-size: 24px; font-weight: 900; cursor: pointer; }
         .top-logo span { color: var(--accent-color); }
-        .logout-icon { color: #ff4d4d; font-size: 18px; cursor: pointer; background: rgba(255,77,77,0.1); padding: 10px; border-radius: 50%; width: 38px; height: 38px; display: flex; justify-content: center; align-items: center; }
+        .header-controls { display: flex; align-items: center; gap: 10px; }
+        .header-icon-btn { color: var(--text-main); font-size: 16px; cursor: pointer; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 50%; width: 38px; height: 38px; display: flex; justify-content: center; align-items: center; border: 1px solid var(--glass-border); }
+        .logout-icon { color: #ff4d4d; background: rgba(255,77,77,0.1); }
 
         /* --- INSTAGRAM SHARE POPUP DRAWER --- */
         .share-popup-sheet { position: fixed; bottom: -100%; left: 0; width: 100vw; height: 60vh; background: #0b0f19; border-top: 2px solid var(--accent-color); border-top-left-radius: 32px; border-top-right-radius: 32px; z-index: 3000; padding: 25px; transition: 0.4s cubic-bezier(0.1, 0.8, 0.3, 1); box-shadow: 0 -20px 50px rgba(0,0,0,0.8); display: flex; flex-direction: column; }
@@ -58,6 +62,16 @@
         .following-share-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         .share-user-row { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border); }
         .share-send-btn { background: var(--accent-color); color: white; border: none; padding: 6px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; }
+
+        /* --- MULTI-ACCOUNT DROPDOWN BAR --- */
+        .accounts-pill-box { display: flex; gap: 8px; padding: 10px; background: rgba(0,0,0,0.4); overflow-x: auto; border-bottom: 1px solid var(--glass-border); }
+        .account-pill-node { display: flex; align-items: center; gap: 6px; background: var(--bg-secondary); border: 1px solid var(--glass-border); padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+        .account-pill-node.active { border-color: var(--accent-color); background: rgba(255,51,102,0.1); }
+
+        /* --- GLOBAL FULLSCREEN DYNAMIC MODAL PANELS --- */
+        .system-modal-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,7,11,0.9); z-index: 4000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(20px); }
+        .modal-body-container { width: 90%; max-width: 500px; background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 28px; padding: 25px; max-height: 85vh; overflow-y: auto; position: relative; }
+        .close-modal-x { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; color: var(--text-muted); }
 
         /* --- MAIN ENGINE WRAPPER --- */
         .main-content { flex: 1; width: 100%; max-width: 600px; margin: 0 auto; height: calc(100vh - 140px); overflow: hidden; position: relative; z-index: 5; }
@@ -69,6 +83,10 @@
         .search-container input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 10px 14px; border-radius: 10px; color: white; outline: none; }
         .search-result-box { display: none; background: #111622; border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px; margin-bottom: 15px; }
 
+        /* --- TWITTER TRENDS BAR --- */
+        .trends-bar { display: flex; gap: 10px; overflow-x: auto; padding: 8px 0; margin-bottom: 12px; font-size: 12px; border-bottom: 1px solid var(--glass-border); }
+        .trend-badge { background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 12px; border: 1px solid var(--glass-border); white-space: nowrap; cursor: pointer; color: #00ffcc; }
+
         /* --- POST INTERFACES --- */
         .create-post { background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 20px; padding: 18px; margin-bottom: 20px; }
         .create-post textarea { width: 100%; border: none; background: transparent; resize: none; outline: none; font-size: 15px; height: 60px; color: var(--text-main); }
@@ -78,18 +96,32 @@
         .media-preview-container img, .media-preview-container video { width: 100%; height: 100%; object-fit: cover; }
         .remove-preview-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; z-index: 10; }
 
-        .post-card { background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 20px; padding: 18px; margin-bottom: 18px; }
+        .post-card { background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: 20px; padding: 18px; margin-bottom: 18px; position: relative; }
         .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .post-user { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
+        .post-user { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; cursor: pointer; }
         .post-timestamp { font-size: 11px; color: var(--text-muted); }
         .post-avatar { width: 38px; height: 38px; border-radius: 50%; background-size: cover; background-position: center; border: 1.5px solid var(--accent-color); }
         .post-text { font-size: 15px; line-height: 1.5; color: #e1e7f0; margin-bottom: 12px; }
-        .post-media-slot { margin-bottom: 12px; border-radius: 16px; overflow: hidden; width: 100%; border: 1px solid var(--glass-border); background: #000; }
+        .post-media-slot { margin-bottom: 12px; border-radius: 16px; overflow: hidden; width: 100%; border: 1px solid var(--glass-border); background: #000; position: relative; user-select: none; }
         .post-media-slot img, .post-media-slot video { width: 100%; display: block; max-height: 380px; object-fit: cover; }
         
+        /* --- INSTAGRAM DOUBLE TAP HEART ANIMATION --- */
+        .heart-pop { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: white; font-size: 60px; text-shadow: 0 0 20px var(--accent-glow); pointer-events: none; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 20; }
+        .heart-pop.animate { transform: translate(-50%, -50%) scale(1); animation: heartFade 0.8s forwards; }
+        @keyframes heartFade { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+
+        /* --- TIKTOK REELS FULLSCREEN VIEW --- */
+        .reels-active-mode { max-width: 100% !important; height: calc(100vh - 140px) !important; }
+        .reels-active-mode #feedArea { display: snap; snap-type: y mandatory; overflow-y: scroll; height: 100%; }
+        .reels-active-mode .post-card { snap-align: start; height: 100%; margin-bottom: 0; border-radius: 0; border: none; display: flex; flex-direction: column; justify-content: center; }
+        .reels-active-mode .post-media-slot img, .reels-active-mode .post-media-slot video { max-height: 60vh; object-fit: contain; }
+
         .post-actions { display: flex; gap: 16px; border-top: 1px solid var(--glass-border); padding-top: 12px; }
         .action-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; font-weight: 600; }
         .action-btn:hover { color: white; }
+        .crud-btn-group { display: flex; gap: 8px; font-size: 12px; margin-top: 5px; }
+        .crud-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; }
+        .crud-btn:hover { color: var(--accent-color); }
 
         /* --- CHAT ENVIRONMENT --- */
         .chat-layout { display: flex; flex-direction: column; height: 100%; }
@@ -99,12 +131,16 @@
         .chat-window.active { display: flex; }
         .chat-header { background: rgba(0,0,0,0.4); padding: 15px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg-bubble { max-width: 75%; padding: 12px 16px; border-radius: 18px; font-size: 14px; }
-        .msg-sent { background: var(--accent-color); align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg-received { background: rgba(255,255,255,0.08); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg-container { display: flex; flex-direction: column; width: 100%; max-width: 75%; position: relative; }
+        .msg-container.sent { align-self: flex-end; align-items: flex-end; }
+        .msg-container.received { align-self: flex-start; align-items: flex-start; }
+        .msg-bubble { padding: 12px 16px; border-radius: 18px; font-size: 14px; width: 100%; }
+        .msg-sent { background: var(--accent-color); border-bottom-right-radius: 4px; }
+        .msg-received { background: rgba(255,255,255,0.08); border-bottom-left-radius: 4px; }
         .shared-card-bubble { border: 1px solid var(--accent-color); background: rgba(0,0,0,0.3); border-radius: 12px; padding: 10px; margin-top: 5px; font-size: 12px; }
-        .chat-input-area { padding: 12px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--glass-border); display: flex; gap: 10px; }
+        .chat-input-area { padding: 12px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--glass-border); display: flex; gap: 10px; align-items: center; }
         .chat-input-area input { flex: 1; background: var(--bg-primary); border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px; color: white; outline: none; }
+        .chat-timer-select { background: var(--bg-primary); color: white; border: 1px solid var(--glass-border); padding: 10px; border-radius: 10px; font-size: 12px; outline: none; }
 
         /* --- PROFILE VIEW --- */
         .profile-header-card { background: var(--bg-secondary); border: 1px solid var(--glass-border); padding: 25px 15px; border-radius: 24px; text-align: center; margin-bottom: 20px; }
@@ -135,6 +171,7 @@
         .nav-item.active { color: var(--accent-color); }
         .nav-item.admin-nav-tab { color: #ffbb008f; }
         .nav-item.admin-nav-tab.active { color: var(--admin-gold) !important; text-shadow: 0 0 10px var(--admin-glow); }
+        #qrModalWrapper #myQrTargetContainer img { margin: 0 auto; }
     </style>
 </head>
 <body>
@@ -154,7 +191,10 @@
                     <option value="🇺🇸|USA">USA 🇺🇸</option>
                     <option value="🇬🇧|UK">UK 🇬🇧</option>
                     <option value="🇦🇪|UAE">UAE 🇦🇪</option>
-                    <option value="🇨🇦|Canada">Canada 🇨🇦</option>
+                    <option value="🇧🇷|Brazil">Brazil 🇧🇷</option>
+                    <option value="🇷🇺|Russia">Russia 🇷🇺</option>
+                    <option value="🇯🇵|Japan">Japan 🇯🇵</option>
+                    <option value="🇳🇵|Nepal">Nepal 🇳🇵</option>
                 </select>
             </div>
 
@@ -167,12 +207,41 @@
 
     <div class="top-header">
         <div class="top-logo" onclick="switchSection('home')">Bunnii<span>.media</span></div>
-        <div class="logout-icon" onclick="logout()"><i class="fa-solid fa-power-off"></i></div>
+        <div class="header-controls">
+            <button class="sec-btn" id="reelsToggleBtn" onclick="toggleReelsMode()" style="font-size: 11px; border-color: var(--accent-color); color: var(--accent-color);"><i class="fa-solid fa-film"></i> Switch Reels</button>
+            <div class="header-icon-btn" onclick="openMyQRNodePopup()" title="My Profile QR Identity"><i class="fa-solid fa-qrcode"></i></div>
+            <div class="header-icon-btn" onclick="toggleQRScannerCameraEngine()" title="Scan QR Code Terminal"><i class="fa-solid fa-camera-rotate"></i></div>
+            <div class="header-icon-btn logout-icon" onclick="logout()"><i class="fa-solid fa-power-off"></i></div>
+        </div>
     </div>
-    <div id="accounts" class="app-section">
-    <h3 style="margin-bottom: 15px;"><i class="fa-solid fa-users" style="color:var(--accent-color);"></i> Network Nodes</h3>
-    <div id="allAccountsList"></div>
-</div>
+
+    <div class="accounts-pill-box" id="multiAccountsGlobalBar"></div>
+
+    <div class="system-modal-layer" id="qrModalWrapper">
+        <div class="modal-body-container">
+            <span class="close-modal-x" onclick="closeSystemModal('qrModalWrapper')">&times;</span>
+            <h3 style="text-align: center; margin-bottom: 15px;"><i class="fa-solid fa-qrcode" style="color: var(--accent-color);"></i> Node Network Identity</h3>
+            <div id="myQrTargetContainer" style="background: white; padding: 20px; border-radius: 16px; text-align: center; display: block; max-width: 240px; margin: 0 auto;"></div>
+            <p style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 15px;">Let others scan this payload to immediately initialize node connection handshake.</p>
+        </div>
+    </div>
+
+    <div class="system-modal-layer" id="scannerModalWrapper">
+        <div class="modal-body-container">
+            <span class="close-modal-x" onclick="closeQRScannerCameraEngine()">&times;</span>
+            <h3 style="text-align: center; margin-bottom: 15px;"><i class="fa-solid fa-camera" style="color: var(--accent-color);"></i> Scanning Matrix Lens</h3>
+            <video id="qrScannerHardwareFeed" style="width: 100%; border-radius: 16px; background: black; transform: scaleX(-1);"></video>
+        </div>
+    </div>
+
+    <div class="system-modal-layer" id="userProfileInspectorModal">
+        <div class="modal-body-container" style="max-width: 550px;">
+            <span class="close-modal-x" onclick="closeSystemModal('userProfileInspectorModal')">&times;</span>
+            <div id="inspectorProfileHeaderSlot"></div>
+            <h4 style="margin: 20px 0 10px 0; font-size: 12px; text-transform: uppercase; color: var(--text-muted);">Broadcast Payload Matrix</h4>
+            <div id="inspectorProfileTimelineFeed" style="display: flex; flex-direction: column; gap: 15px;"></div>
+        </div>
+    </div>
 
     <div class="share-popup-sheet" id="globalShareSheet">
         <div class="share-sheet-header">
@@ -182,7 +251,7 @@
         <div class="following-share-list" id="shareSheetTargetList"></div>
     </div>
 
-    <div class="main-content">
+    <div class="main-content" id="mainAppContentFrame">
         
         <div id="home" class="app-section active">
             <div class="search-container">
@@ -191,14 +260,16 @@
             </div>
 
             <div class="search-result-box" id="searchOutputDisplay"></div>
+            
+            <div class="trends-bar" id="globalTrendsContainer"></div>
 
             <div class="create-post">
-                <textarea id="postText" placeholder="Broadcast your tech logs, creative updates, or media payloads to the node..."></textarea>
+                <textarea id="postText" placeholder="Broadcast your tech logs, creative updates, or media payloads to the node... Use #hashtags to trend!"></textarea>
                 <input type="file" id="galleryPhotoInput" accept="image/*" style="display: none;" onchange="processGalleryFile(this, 'image')">
                 <input type="file" id="galleryVideoInput" accept="video/*" style="display: none;" onchange="processGalleryFile(this, 'video')">
 
                 <div class="gallery-trigger-bar">
-                    <button class="gallery-btn" onclick="document.getElementById('galleryPhotoInput').click()"><i class="fa-solid fa-image" style="color: #4cd96 green;"></i> Attach Image</button>
+                    <button class="gallery-btn" onclick="document.getElementById('galleryPhotoInput').click()"><i class="fa-solid fa-image" style="color: green;"></i> Attach Image</button>
                     <button class="gallery-btn" onclick="document.getElementById('galleryVideoInput').click()"><i class="fa-solid fa-video" style="color: #ff3b30;"></i> Attach Video</button>
                 </div>
 
@@ -227,6 +298,12 @@
                 </div>
                 <div class="chat-messages" id="chatMsgArea"></div>
                 <div class="chat-input-area">
+                    <select class="chat-timer-select" id="messageDestructTimer" title="Telegram Self-Destruct Message Timer">
+                        <option value="0">Normal Chat</option>
+                        <option value="5">5 Secs</option>
+                        <option value="10">10 Secs</option>
+                        <option value="30">30 Secs</option>
+                    </select>
                     <input type="text" id="chatMsgInputField" placeholder="Transmit direct encrypted content...">
                     <button class="sec-btn" style="background:var(--accent-color); border:none;" onclick="sendSecureMessage()"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
@@ -260,7 +337,7 @@
             <div id="myPostsArea"></div>
         </div>
 
-        <div id="adminArea" class="app-section">
+        <div id="adminArea" class="app-section" style="display: none;">
             <h3 style="color: var(--admin-gold); margin-bottom: 15px;"><i class="fa-solid fa-terminal"></i> Creator Control Terminal</h3>
             <div class="admin-stat-row">
                 <div class="admin-card"><h5>Nodes</h5><p id="inlineAdminUsersCount">0</p></div>
@@ -279,27 +356,6 @@
     </div>
 
     <script type="module">
-      window.renderAllAccountsList = function() {
-    const listTarget = document.getElementById('allAccountsList');
-    if(!listTarget) return;
-    listTarget.innerHTML = "";
-    
-    localFallbackDatabase.forEach(u => {
-        const card = document.createElement('div');
-        card.className = "user-chat-card";
-        card.innerHTML = `
-            <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:40px; height:40px; border-radius:50%; background-image:url('${u.avatar}'); background-size:cover; border:1px solid var(--accent-color);"></div>
-                <div>
-                    <div style="font-weight:700;">@${u.username} ${u.countryFlag || ''}</div>
-                    <div style="font-size:11px; color:var(--text-muted);">${u.email}</div>
-                </div>
-            </div>
-        `;
-        listTarget.appendChild(card);
-    });
-};
-
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { 
             getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot, addDoc 
@@ -309,25 +365,27 @@
         } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
         // =======================================================
-        // 🚀 आपके प्रोजेक्ट क्रेडेंशियल्स सफलतापूर्वक फिक्स कर दिए गए हैं!
+        // 🚀 CLEAN & RELIABLE FIREBASE CONFIGURATION LAYER
         // =======================================================
-        // Firebase Configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyBNJ9WTZc-96w3SsMBgMdKRfX9C-N4_oj4",
-    authDomain: "optical-wall-434100-g5.firebaseapp.com",
-    projectId: "optical-wall-434100-g5",
-    storageBucket: "optical-wall-434100-g5.appspot.com",
-    messagingSenderId: "363477331113",
-    appId: "1:363477331113:web:8dfa36558ca19d3ffee0a8",
-    measurementId: "G-WVQP99RRTC"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNJ9WTZc-96w3SsMBgMdKRfX9C-N4_oj4", 
+            authDomain: "optical-wall-434100-g5.firebaseapp.com",
+            projectId: "optical-wall-434100-g5",
+            storageBucket: "optical-wall-434100-g5.appspot.com", 
+            messagingSenderId: "363477331113",
+            appId: "1:363477331113:web:8dfa36558ca19d3ffeea8c",
+            measurementId: "G-WVOP99RRTC"
+        };
 
-// Firebase Initialize
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-        // SYSTEM ECOSYSTEM STATE MANAGERS
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const ADMIN_EMAIL = "bunnii.media.admin@gmail.com"; 
+
+        // STATE OBJECTS
         let localFallbackDatabase = [];
+        let globalPostsCache = [];
         let activeUserSession = JSON.parse(localStorage.getItem('bunnii_app_session')) || null;
         let selectedChatUser = null; 
         let base64MediaCache = null; 
@@ -335,6 +393,8 @@ const auth = getAuth(app);
         let targetSharePostId = null; 
         let isSignUpMode = false;
         let unsubscribeChatListener = null;
+        let qrScannerInstance = null;
+        let isReelsModeActive = false; 
 
         // REALTIME SYNC ENGINE FOR DATA ROUTING
         function initRealtimeDatabaseSync() {
@@ -349,18 +409,22 @@ const auth = getAuth(app);
                     if(currentMe) {
                         activeUserSession = currentMe;
                         localStorage.setItem('bunnii_app_session', JSON.stringify(activeUserSession));
+                        updateMultiAccountSessionArray(activeUserSession);
                     }
                     synchronizeSystemState();
                 }
+                renderMultiAccountsBar();
             });
 
             const postsQuery = query(collection(db, "posts"), orderBy("timestamp", "desc"));
             onSnapshot(postsQuery, (snapshot) => {
-                const posts = [];
+                globalPostsCache = [];
                 snapshot.forEach(docNode => {
-                    posts.push(docNode.data());
+                    globalPostsCache.push(docNode.data());
                 });
-                renderPostsFeed(posts);
+                renderPostsFeed(globalPostsCache);
+                extractAndRenderTwitterTrends(globalPostsCache); 
+                processDeepLinkHashingEvaluation();
             });
         }
 
@@ -388,9 +452,159 @@ const auth = getAuth(app);
         }
         generateApple3DStream();
 
+        // MULTI-ACCOUNT VAULT ENGINE
+        function getSavedAccountsFromVault() {
+            return JSON.parse(localStorage.getItem('bunnii_vault_accounts')) || [];
+        }
+
+        function updateMultiAccountSessionArray(userSessionObj) {
+            let accounts = getSavedAccountsFromVault();
+            let existsIndex = accounts.findIndex(a => a.email === userSessionObj.email);
+            if(existsIndex !== -1) {
+                accounts[existsIndex] = userSessionObj;
+            } else {
+                if(accounts.length >= 7) return; 
+                accounts.push(userSessionObj);
+            }
+            localStorage.setItem('bunnii_vault_accounts', JSON.stringify(accounts));
+        }
+
+        function renderMultiAccountsBar() {
+            const bar = document.getElementById('multiAccountsGlobalBar');
+            if(!bar) return;
+            let accounts = getSavedAccountsFromVault();
+            if(accounts.length <= 1) { bar.style.display = "none"; return; }
+            bar.style.display = "flex";
+            bar.innerHTML = "";
+            accounts.forEach(acc => {
+                let isActive = activeUserSession && acc.email === activeUserSession.email;
+                const node = document.createElement('div');
+                node.className = `account-pill-node ${isActive ? 'active' : ''}`;
+                node.innerHTML = `
+                    <img src="${acc.avatar}" style="width:18px; height:18px; border-radius:50%;">
+                    <span>@${acc.username}</span>
+                `;
+                node.onclick = () => { if(!isActive) switchActiveAccountSession(acc.email); };
+                bar.appendChild(node);
+            });
+        }
+
+        async function switchActiveAccountSession(email) {
+            let accounts = getSavedAccountsFromVault();
+            let target = accounts.find(a => a.email === email);
+            if(!target) return;
+            activeUserSession = target;
+            localStorage.setItem('bunnii_app_session', JSON.stringify(activeUserSession));
+            synchronizeSystemState();
+            alert(`Switched operational node context to: @${target.username}`);
+            location.reload();
+        }
+
         // =======================================================
-        // 🚀 GLOBAL WINDOW SCOPING BINDINGS FOR BUTTON ONCLICKS
+        // 🚀 GLOBAL CODES & QR ENGINE BINDINGS
         // =======================================================
+        window.openMyQRNodePopup = function() {
+            if(!activeUserSession) return;
+            document.getElementById('myQrTargetContainer').innerHTML = "";
+            let payloadUri = `${window.location.origin}${window.location.pathname}#profile?username=${activeUserSession.username}`;
+            new QRCode(document.getElementById('myQrTargetContainer'), {
+                text: payloadUri, width: 240, height: 240, colorDark: "#000000", colorLight: "#ffffff"
+            });
+            document.getElementById('qrModalWrapper').style.display = "flex";
+        };
+
+        window.toggleQRScannerCameraEngine = function() {
+            document.getElementById('scannerModalWrapper').style.display = "flex";
+            qrScannerInstance = new Instascan.Scanner({ video: document.getElementById('qrScannerHardwareFeed') });
+            qrScannerInstance.addListener('scan', function(content) {
+                if(content) {
+                    window.closeQRScannerCameraEngine();
+                    if(content.includes('#profile?username=')) {
+                        let extractedHandle = content.split('#profile?username=')[1];
+                        window.launchUserProfileInspectorModal(extractedHandle);
+                    } else if(content.includes('#post?id=')) {
+                        let extractedPostId = content.split('#post?id=')[1];
+                        window.location.hash = `post?id=${extractedPostId}`;
+                        processDeepLinkHashingEvaluation();
+                    } else {
+                        alert("Scanned non-app token configuration payload: " + content);
+                    }
+                }
+            });
+            Instascan.Camera.getCameras().then(function(cameras) {
+                if(cameras.length > 0) {
+                    qrScannerInstance.start(cameras[0]);
+                } else {
+                    alert('No capture hardware array device discovered.');
+                    window.closeQRScannerCameraEngine();
+                }
+            }).catch(function(e) { alert(e); window.closeQRScannerCameraEngine(); });
+        };
+
+        window.closeQRScannerCameraEngine = function() {
+            if(qrScannerInstance) { qrScannerInstance.stop(); qrScannerInstance = null; }
+            document.getElementById('scannerModalWrapper').style.display = "none";
+        };
+
+        window.closeSystemModal = function(id) { document.getElementById(id).style.display = "none"; };
+
+        window.launchUserProfileInspectorModal = function(username) {
+            let userObj = localFallbackDatabase.find(u => u.username.toLowerCase() === username.toLowerCase());
+            if(!userObj) return alert("Node database target identity missing.");
+            
+            const headerSlot = document.getElementById('inspectorProfileHeaderSlot');
+            const timelineSlot = document.getElementById('inspectorProfileTimelineFeed');
+            
+            let isFollowing = activeUserSession.following && activeUserSession.following.includes(userObj.email);
+            let actionBtnMarkup = "";
+            if(userObj.email !== activeUserSession.email) {
+                actionBtnMarkup = isFollowing 
+                    ? `<button class="sec-btn" style="background:#00ffcc; color:black; border:none;" onclick="closeSystemModal('userProfileInspectorModal'); switchSection('chats'); window.openSecureChatChannel('${userObj.email}', '${userObj.username}');"><i class="fa-solid fa-message"></i> Message</button>`
+                    : `<button class="sec-btn" style="background:var(--accent-color); border:none;" onclick="triggerFollowEngine('${userObj.email}')"><i class="fa-solid fa-user-plus"></i> Connect</button>`;
+            }
+
+            headerSlot.innerHTML = `
+                <div style="text-align:center; border-bottom: 1px solid var(--glass-border); padding-bottom:15px;">
+                    <div style="width:80px; height:80px; border-radius:50%; background-image:url('${userObj.avatar}'); background-size:cover; background-position:center; margin:0 auto 10px; border:2px solid var(--accent-color);"></div>
+                    <h3>@${userObj.username}</h3>
+                    <p style="font-size:12px; color:var(--text-muted);">${userObj.firstName} ${userObj.lastName}</p>
+                    <div style="margin-top:10px;">${actionBtnMarkup}</div>
+                </div>
+            `;
+
+            timelineSlot.innerHTML = "";
+            let specificPosts = globalPostsCache.filter(p => p.email === userObj.email);
+            if(specificPosts.length === 0) {
+                timelineSlot.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:13px;">No history logs deployed by this node.</p>`;
+            } else {
+                specificPosts.forEach(p => { renderTimelineBlock(p, timelineSlot, true); });
+            }
+            document.getElementById('userProfileInspectorModal').style.display = "flex";
+        };
+
+        // EVALUATE DEEP LINK ROUTING (100% WORKING INTERNAL ROUTER)
+        function processDeepLinkHashingEvaluation() {
+            let hash = window.location.hash;
+            if(!hash) return;
+            if(hash.includes('#post?id=')) {
+                let targetId = hash.split('#post?id=')[1];
+                let targetPostNode = globalPostsCache.find(p => p.id === targetId);
+                if(targetPostNode) {
+                    switchSection('home');
+                    const feedAreaBox = document.getElementById('feedArea');
+                    feedAreaBox.innerHTML = "";
+                    renderTimelineBlock(targetPostNode, feedAreaBox);
+                    let resetBar = document.createElement('div');
+                    resetBar.innerHTML = `<button class='sec-btn' style='width:100%; margin-bottom:15px;' onclick='window.location.hash=""; location.reload();'><i class='fa-solid fa-arrow-left'></i> Return Back to Global Pipeline</button>`;
+                    feedAreaBox.prepend(resetBar);
+                    window.location.hash = ""; 
+                }
+            } else if(hash.includes('#profile?username=')) {
+                let targetUser = hash.split('#profile?username=')[1];
+                window.location.hash = "";
+                window.launchUserProfileInspectorModal(targetUser);
+            }
+        }
         
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
@@ -460,6 +674,7 @@ const auth = getAuth(app);
                     }
                 }
 
+                updateMultiAccountSessionArray(activeUserSession);
                 localStorage.setItem('bunnii_app_session', JSON.stringify(activeUserSession));
                 synchronizeSystemState();
 
@@ -477,6 +692,7 @@ const auth = getAuth(app);
                     
                     activeUserSession.avatar = imgString;
                     localStorage.setItem('bunnii_app_session', JSON.stringify(activeUserSession));
+                    updateMultiAccountSessionArray(activeUserSession);
                     
                     await updateDoc(doc(db, "users", activeUserSession.uid), { avatar: imgString });
                     alert("Profile visual configuration committed!");
@@ -496,6 +712,7 @@ const auth = getAuth(app);
             await updateDoc(doc(db, "users", activeUserSession.uid), { username: parsedHandle });
             activeUserSession.username = parsedHandle;
             localStorage.setItem('bunnii_app_session', JSON.stringify(activeUserSession));
+            updateMultiAccountSessionArray(activeUserSession);
             
             alert("Identity profile handle data synchronized!");
         };
@@ -544,7 +761,11 @@ const auth = getAuth(app);
             await updateDoc(doc(db, "users", recipientUser.uid), { followers: peerFollowers });
 
             alert("Handshake achieved!");
-            executeGlobalSearch();
+            if(document.getElementById('userProfileInspectorModal').style.display === "flex") {
+                window.launchUserProfileInspectorModal(recipientUser.username);
+            } else {
+                executeGlobalSearch();
+            }
         };
 
         window.createPost = async function() {
@@ -564,9 +785,9 @@ const auth = getAuth(app);
                 img: (cachedMediaType === 'image' ? base64MediaCache : ""), 
                 vid: (cachedMediaType === 'video' ? base64MediaCache : ""),
                 likes: 0, 
-                timestamp: timeNow.getTime(),
+                timestamp: timeNow.getTime(), 
                 timestampString: formattedDateString, 
-                assetUrl: `https://bunnii.media/posts/view?id=${idToken}`,
+                assetUrl: `${window.location.origin}${window.location.pathname}#post?id=${idToken}`,
                 countryFlag: activeUserSession.countryFlag || '🌐'
             };
 
@@ -575,16 +796,80 @@ const auth = getAuth(app);
             clearSelectedMedia();
         };
 
+        window.modifyOperationalPostLog = async function(postId) {
+            let newText = prompt("Enter modifications for post payload log entry:");
+            if(!newText || !newText.trim()) return;
+            await updateDoc(doc(db, "posts", postId), { text: newText });
+        };
+
         window.adminModerateDeletePost = async function(postId) {
             if(!confirm("Erase this timeline broadcast from network infrastructure?")) return;
             await deleteDoc(doc(db, "posts", postId));
         };
 
-        window.copyPostAssetLink = function(url) { navigator.clipboard.writeText(url); alert("Link copied!"); };
+        window.copyPostAssetLink = function(url) { navigator.clipboard.writeText(url); alert("Ecosystem structural Deep Link copied!"); };
 
         window.likePost = async function(id, currentLikes) {
             await updateDoc(doc(db, "posts", id), { likes: currentLikes + 1 });
         };
+
+        // INSTAGRAM DOUBLE TAP INSTANT ENGAGEMENT LOGIC
+        window.handleInstagramDoubleTap = function(postId, currentLikes, element) {
+            const heartNode = element.querySelector('.heart-pop');
+            if(heartNode) {
+                heartNode.classList.add('animate');
+                setTimeout(() => heartNode.classList.remove('animate'), 800);
+            }
+            window.likePost(postId, currentLikes);
+        };
+
+        // TIKTOK REELS MODE CORE SYSTEM CONFIG
+        window.toggleReelsMode = function() {
+            isReelsModeActive = !isReelsModeActive;
+            const containerFrame = document.getElementById('mainAppContentFrame');
+            const toggleBtn = document.getElementById('reelsToggleBtn');
+            
+            if(isReelsModeActive) {
+                containerFrame.classList.add('reels-active-mode');
+                toggleBtn.style.background = "var(--accent-color)";
+                toggleBtn.style.color = "white";
+                alert("TikTok Infinite Scroll Mode Activated. Only media posts rendered.");
+            } else {
+                containerFrame.classList.remove('reels-active-mode');
+                toggleBtn.style.background = "none";
+                toggleBtn.style.color = "var(--accent-color)";
+            }
+            renderPostsFeed(globalPostsCache);
+        };
+
+        // TWITTER HASHTAG EXTRACTOR SYSTEM
+        function extractAndRenderTwitterTrends(posts) {
+            const trendBox = document.getElementById('globalTrendsContainer');
+            if(!trendBox) return;
+            let hashtagCounts = {};
+            posts.forEach(p => {
+                if(p.text) {
+                    let matches = p.text.match(/#\w+/g);
+                    if(matches) {
+                        matches.forEach(tag => {
+                            hashtagCounts[tag] = (hashtagCounts[tag] || 0) + 1;
+                        });
+                    }
+                }
+            });
+            trendBox.innerHTML = "<span style='color:var(--text-muted); font-weight:bold; white-space:nowrap; padding:4px 0;'><i class='fa-solid fa-arrow-trend-up'></i> Trends: </span>";
+            Object.keys(hashtagCounts).sort((a,b) => hashtagCounts[b] - hashtagCounts[a]).slice(0, 5).forEach(tag => {
+                const badge = document.createElement('span');
+                badge.className = "trend-badge";
+                badge.innerText = `${tag} (${hashtagCounts[tag]})`;
+                badge.onclick = () => {
+                    document.getElementById('globalSearchInput').value = tag;
+                    let filtered = globalPostsCache.filter(p => p.text && p.text.toLowerCase().includes(tag.toLowerCase()));
+                    renderPostsFeed(filtered);
+                };
+                trendBox.appendChild(badge);
+            });
+        }
 
         window.loadChatTerminalUsers = function() {
             const listTarget = document.getElementById('chatListTarget'); if(!listTarget) return;
@@ -625,17 +910,40 @@ const auth = getAuth(app);
 
         window.sendSecureMessage = async function() {
             const inputFieldElement = document.getElementById('chatMsgInputField'); 
+            const timerSelector = document.getElementById('messageDestructTimer');
             if(!inputFieldElement || !inputFieldElement.value.trim() || !selectedChatUser) return;
             
+            let destructSecs = parseInt(timerSelector.value) || 0;
+
             let packetMessage = { 
                 sender: activeUserSession.email, 
                 receiver: selectedChatUser.email, 
                 text: inputFieldElement.value, 
-                timestamp: Date.now() 
+                timestamp: Date.now(),
+                destructTimer: destructSecs 
             };
 
             await addDoc(collection(db, "messages"), packetMessage);
             inputFieldElement.value = "";
+        };
+
+        window.modifySecureMessagePayload = async function(msgId) {
+            let replacementText = prompt("Edit secure message buffer payload:");
+            if(!replacementText || !replacementText.trim()) return;
+            await updateDoc(doc(db, "messages", msgId), { text: replacementText }); 
+        };
+
+        window.removeSecureMessageFromCloud = async function(msgId) {
+            try {
+                await deleteDoc(doc(db, "messages", msgId));
+            } catch (err) {
+                console.error("Self destruct delete sequence failed:", err);
+            }
+        };
+
+        window.terminateSecureMessagePayload = async function(msgId) {
+            if(!confirm("Purge message node entirely?")) return;
+            await deleteDoc(doc(db, "messages", msgId));
         };
 
         window.openInstagramShareSheet = function(postId) {
@@ -699,15 +1007,6 @@ const auth = getAuth(app);
         window.switchSection = function(id, element) {
             document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            window.switchSection = function(id, element) {
-    // ... आपका पुराना कोड ...
-    
-    // यह वाली लाइन जोड़ें:
-    if(id === 'accounts') renderAllAccountsList(); 
-    
-    // ... बाकी कोड ...
-};
-
             
             const selectedSection = document.getElementById(id);
             if(selectedSection) selectedSection.classList.add('active');
@@ -718,20 +1017,28 @@ const auth = getAuth(app);
                 if(id === 'home') document.querySelector('.bottom-nav .nav-item:nth-child(1)').classList.add('active');
                 if(id === 'chats') document.querySelector('.bottom-nav .nav-item:nth-child(2)').classList.add('active');
                 if(id === 'profile') document.querySelector('.bottom-nav .nav-item:nth-child(3)').classList.add('active');
-                <div class="nav-item" onclick="switchSection('accounts', this)"><i class="fa-solid fa-users"></i><span>Accounts</span></div>
             }
 
             if(id === 'adminArea') triggerInlineAdminEngineRefresh();
         };
 
         window.logout = async function() { 
+            let accounts = getSavedAccountsFromVault();
+            if(activeUserSession) {
+                accounts = accounts.filter(a => a.email !== activeUserSession.email);
+                localStorage.setItem('bunnii_vault_accounts', JSON.stringify(accounts));
+            }
             await signOut(auth);
             localStorage.removeItem('bunnii_app_session'); 
-            location.reload(); 
+            if(accounts.length > 0) {
+                switchActiveAccountSession(accounts[0].email);
+            } else {
+                location.reload(); 
+            }
         };
 
         // =======================================================
-        // 🔄 INTERNAL CORE CORE ENGINES
+        // 🔄 INTERNAL CORE ENGINES
         // =======================================================
 
         function synchronizeSystemState() {
@@ -747,7 +1054,7 @@ const auth = getAuth(app);
             document.getElementById('statFollowers').innerText = activeUserSession.followers ? activeUserSession.followers.length : 0;
             document.getElementById('statFollowing').innerText = activeUserSession.following ? activeUserSession.following.length : 0;
 
-            if(activeUserSession.email.toLowerCase() === "n4062226@gmail.com") {
+            if(activeUserSession.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                 document.getElementById('dynamicAdminNavTab').style.display = "flex";
                 triggerInlineAdminEngineRefresh();
             } else {
@@ -759,7 +1066,7 @@ const auth = getAuth(app);
         }
 
         function triggerInlineAdminEngineRefresh() {
-            if(activeUserSession.email.toLowerCase() !== "n4062226@gmail.com") return;
+            if(activeUserSession.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return;
             
             document.getElementById('inlineAdminUsersCount').innerText = localFallbackDatabase.length;
             const targetListDom = document.getElementById('inlineAdminUsersList');
@@ -811,7 +1118,7 @@ const auth = getAuth(app);
             container.innerHTML = `
                 <div style="display:flex; align-items:center; gap:12px;">
                     <div style="width:40px; height:40px; border-radius:50%; background-image:url('${userObject.avatar}'); background-size:cover; background-position:center;"></div>
-                    <div>
+                    <div style="cursor:pointer;" onclick="closeSystemModal('userProfileInspectorModal'); window.launchUserProfileInspectorModal('${userObject.username}')">
                         <div style="font-weight:bold; display:flex; align-items:center; gap:6px;">@${userObject.username} <span>${userObject.countryFlag || ''}</span></div>
                         <div style="font-size:11px; color:var(--text-muted);">${userObject.firstName} ${userObject.lastName}</div>
                     </div>
@@ -837,6 +1144,8 @@ const auth = getAuth(app);
             let generatedPostIndexCount = 0;
 
             posts.forEach(p => {
+                if(isReelsModeActive && !p.vid) return;
+
                 renderTimelineBlock(p, feedAreaBox);
                 if(activeUserSession && p.email === activeUserSession.email) { 
                     generatedPostIndexCount++; 
@@ -852,10 +1161,10 @@ const auth = getAuth(app);
             }
         }
 
-        function renderTimelineBlock(data, destinationContainer) {
+        function renderTimelineBlock(data, destinationContainer, skipInspectorLaunch = false) {
             let dynamicMediaEmbedCode = "";
-            if(data.img) dynamicMediaEmbedCode += `<div class="post-media-slot"><img src="${data.img}"></div>`;
-            if(data.vid) dynamicMediaEmbedCode += `<div class="post-media-slot"><video src="${data.vid}" controls loop></video></div>`;
+            if(data.img) dynamicMediaEmbedCode += `<div class="post-media-slot" ondblclick="window.handleInstagramDoubleTap('${data.id}', ${data.likes || 0}, this)"><div class="heart-pop"><i class="fa-solid fa-heart"></i></div><img src="${data.img}"></div>`;
+            if(data.vid) dynamicMediaEmbedCode += `<div class="post-media-slot" ondblclick="window.handleInstagramDoubleTap('${data.id}', ${data.likes || 0}, this)"><div class="heart-pop"><i class="fa-solid fa-heart"></i></div><video src="${data.vid}" controls loop></video></div>`;
 
             const card = document.createElement('div');
             card.className = "post-card";
@@ -869,14 +1178,19 @@ const auth = getAuth(app);
                     : `<button class="sec-btn inline-connect-btn" style="padding:2px 8px; font-size:11px; background:var(--accent-color); border:none; margin-left:8px;"><i class="fa-solid fa-user-plus"></i> Connect</button>`;
             }
 
-            let creatorDeletePostBtnMarkup = "";
-            if(activeUserSession && activeUserSession.email.toLowerCase() === "n4062226@gmail.com") {
-                creatorDeletePostBtnMarkup = `<button class="sec-btn inline-terminate-btn" style="border-color:crimson; color:crimson; font-size:11px; padding:2px 6px;"><i class="fa-solid fa-trash-can"></i> Terminate Post</button>`;
+            let crudControlsMarkup = "";
+            if(activeUserSession && (data.email === activeUserSession.email || activeUserSession.email.toLowerCase() === ADMIN_EMAIL.toLowerCase())) {
+                crudControlsMarkup = `
+                    <div class="crud-btn-group">
+                        <button class="crud-btn" onclick="window.modifyOperationalPostLog('${data.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button class="crud-btn" style="color:crimson;" onclick="window.adminModerateDeletePost('${data.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
+                    </div>
+                `;
             }
 
             card.innerHTML = `
                 <div class="post-header">
-                    <span class="post-user">
+                    <span class="post-user" id="trigger_inspect_${data.id}">
                         <div class="post-avatar" style="background-image:url('${data.avatar}')"></div>
                         <div>
                             <div style="display:flex; align-items:center; gap:4px;">
@@ -885,7 +1199,7 @@ const auth = getAuth(app);
                             <div class="post-timestamp">${data.timestampString}</div>
                         </div>
                     </span>
-                    <span class="terminate-slot">${creatorDeletePostBtnMarkup}</span>
+                    <span>${crudControlsMarkup}</span>
                 </div>
                 ${dynamicMediaEmbedCode}
                 <div class="post-text">${data.text}</div>
@@ -898,11 +1212,13 @@ const auth = getAuth(app);
 
             const inlineMsg = card.querySelector('.inline-msg-btn');
             const inlineConnect = card.querySelector('.inline-connect-btn');
-            const inlineTerminate = card.querySelector('.inline-terminate-btn');
 
-            if(inlineMsg) inlineMsg.onclick = () => { window.switchSection('chats'); window.openSecureChatChannel(data.email, data.user); };
-            if(inlineConnect) inlineConnect.onclick = () => window.triggerFollowEngine(data.email);
-            if(inlineTerminate) inlineTerminate.onclick = () => window.adminModerateDeletePost(data.id);
+            if(inlineMsg) inlineMsg.onclick = (e) => { e.stopPropagation(); window.switchSection('chats'); window.openSecureChatChannel(data.email, data.user); };
+            if(inlineConnect) inlineConnect.onclick = (e) => { e.stopPropagation(); window.triggerFollowEngine(data.email); };
+
+            if(!skipInspectorLaunch) {
+                card.querySelector(`#trigger_inspect_${data.id}`).onclick = () => window.launchUserProfileInspectorModal(data.user);
+            }
 
             card.querySelector('.like-trigger').onclick = () => window.likePost(data.id, data.likes || 0);
             card.querySelector('.link-trigger').onclick = () => window.copyPostAssetLink(data.assetUrl);
@@ -924,6 +1240,7 @@ const auth = getAuth(app);
                 messageboxAreaElement.innerHTML = "";
                 snapshot.forEach(docNode => {
                     let m = docNode.data();
+                    let mId = docNode.id;
                     if((m.sender === activeUserSession.email && m.receiver === selectedChatUser.email) || 
                        (m.sender === selectedChatUser.email && m.receiver === activeUserSession.email)) {
                         
@@ -931,10 +1248,36 @@ const auth = getAuth(app);
                         let injectionMarkup = validationShareState ? `<div class="shared-card-bubble">${m.text.replace(/\n/g, '<br>')}</div>` : m.text;
                         let bubbleClass = (m.sender === activeUserSession.email) ? 'msg-sent' : 'msg-received';
                         
-                        const msgBubble = document.createElement('div');
-                        msgBubble.className = `msg-bubble ${bubbleClass}`;
-                        msgBubble.innerHTML = injectionMarkup;
-                        messageboxAreaElement.appendChild(msgBubble);
+                        // TELEGRAM SELF-DESTRUCT ENGINE
+                        if(m.destructTimer && m.destructTimer > 0) {
+                            let msElapsed = Date.now() - m.timestamp;
+                            let secElapsed = Math.floor(msElapsed / 1000);
+                            if(secElapsed >= m.destructTimer) {
+                                window.removeSecureMessageFromCloud(mId);
+                                return;
+                            } else {
+                                let remaining = m.destructTimer - secElapsed;
+                                injectionMarkup += ` <span style="font-size:10px; color:#ffcc00; display:block; margin-top:4px;"><i class="fa-solid fa-clock"></i> Destructing in ${remaining}s</span>`;
+                            }
+                        }
+
+                        let msgCrudGroup = "";
+                        if(m.sender === activeUserSession.email) {
+                            msgCrudGroup = `
+                                <div style="font-size:10px; display:flex; gap:6px; opacity:0.6; margin-top:2px;">
+                                    <span style="cursor:pointer;" onclick="window.modifySecureMessagePayload('${mId}')">Edit</span>
+                                    <span style="cursor:pointer; color:red;" onclick="window.terminateSecureMessagePayload('${mId}')">Delete</span>
+                                </div>
+                            `;
+                        }
+
+                        const msgWrap = document.createElement('div');
+                        msgWrap.className = `msg-container ${bubbleClass === 'msg-sent' ? 'sent' : 'received'}`;
+                        msgWrap.innerHTML = `
+                            <div class="msg-bubble ${bubbleClass}">${injectionMarkup}</div>
+                            ${msgCrudGroup}
+                        `;
+                        messageboxAreaElement.appendChild(msgWrap);
                     }
                 });
                 messageboxAreaElement.scrollTop = messageboxAreaElement.scrollHeight;
@@ -943,4 +1286,3 @@ const auth = getAuth(app);
     </script>
 </body>
 </html>
-
